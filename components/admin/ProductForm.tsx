@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { CATEGORIES, AUDIENCES, COLLECTIONS } from "@/lib/catalog";
 import type { ProductFormState } from "@/app/admin/(dashboard)/products/actions";
 
@@ -32,6 +32,11 @@ export default function ProductForm({
   submitLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  const [imagesText, setImagesText] = useState(defaults?.images?.join("\n") ?? "");
+  const imageUrls = imagesText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 
   return (
     <form action={formAction} className="mt-6 max-w-2xl space-y-5">
@@ -186,9 +191,43 @@ export default function ProductForm({
           name="images"
           rows={4}
           placeholder={"https://res.cloudinary.com/.../photo-1.jpg\nhttps://res.cloudinary.com/.../photo-2.jpg"}
-          defaultValue={defaults?.images?.join("\n") ?? ""}
+          value={imagesText}
+          onChange={(e) => setImagesText(e.target.value)}
           className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 font-mono text-xs text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
         />
+        {/* Live thumbnails so a pasted link can be eyeballed before saving
+            — a broken/wrong URL shows as a broken image right here instead
+            of only being discovered after saving and checking the live
+            product page. */}
+        {imageUrls.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {imageUrls.map((url, i) => (
+              <div
+                key={`${url}-${i}`}
+                className="h-16 w-16 shrink-0 overflow-hidden border border-[var(--border-strong)] bg-[var(--surface)]"
+                title={url}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt={`Preview ${i + 1}`}
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    const fallback = e.currentTarget.nextElementSibling;
+                    if (fallback instanceof HTMLElement) {
+                      fallback.classList.remove("hidden");
+                      fallback.classList.add("flex");
+                    }
+                  }}
+                />
+                <span className="hidden h-full w-full items-center justify-center px-1 text-center text-[9px] text-red-500">
+                  Broken link
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div>

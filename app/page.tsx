@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES, formatPrice } from "@/lib/catalog";
+import { diversePick } from "@/lib/diversePick";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ProductCard from "@/components/ProductCard";
 import AddToBagButton from "@/components/AddToBagButton";
@@ -31,46 +32,6 @@ const NEW_ARRIVALS_LAST_SLUG = "pink-round-necklace";
 const INSTAGRAM_REELS = [
   "https://res.cloudinary.com/tksnn8ya/video/upload/v1786570169/reel-1-meraki_oafscj.mp4",
 ];
-
-// Inferred straight from the query's own return type (rather than a
-// hand-rolled interface) so `price` keeps its real Prisma Decimal type —
-// a hand-rolled `price: unknown` would break every `.toString()` call
-// below.
-type HomeProduct = Awaited<ReturnType<typeof prisma.product.findMany>>[number];
-
-// Round-robins across categories (in the site's own CATEGORIES order, then
-// anything else) instead of picking straight off createdAt — otherwise
-// whichever category was imported last (a big batch of necklaces, in this
-// case) dominates every homepage section instead of the page showing the
-// actual range of what's for sale.
-function diversePick(
-  pool: HomeProduct[],
-  count: number,
-  exclude: Set<string> = new Set()
-): HomeProduct[] {
-  const available = pool.filter((p) => !exclude.has(p.id));
-  const byCategory = new Map<string, HomeProduct[]>();
-  for (const p of available) {
-    if (!byCategory.has(p.category)) byCategory.set(p.category, []);
-    byCategory.get(p.category)!.push(p);
-  }
-  const extraCategories = Array.from(byCategory.keys()).filter(
-    (c) => !(CATEGORIES as readonly string[]).includes(c)
-  );
-  const categoryOrder = [...CATEGORIES, ...extraCategories];
-
-  const result: HomeProduct[] = [];
-  for (let round = 0; result.length < count && round < 20; round++) {
-    for (const cat of categoryOrder) {
-      const group = byCategory.get(cat);
-      if (group && group[round]) {
-        result.push(group[round]);
-        if (result.length >= count) break;
-      }
-    }
-  }
-  return result;
-}
 
 export default async function Home() {
   // One query for every active product — at this catalog size (under a

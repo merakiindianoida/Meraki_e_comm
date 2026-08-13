@@ -144,3 +144,27 @@ export async function toggleProductActive(id: string, isActive: boolean) {
   await prisma.product.update({ where: { id }, data: { isActive } });
   revalidatePath("/admin/products");
 }
+
+export type DeleteProductState = { error?: string } | undefined;
+
+// A real delete, not just deactivate — but only when it's actually safe:
+// Prisma throws on the foreign-key constraint if any OrderItem still
+// references this product (no onDelete: Cascade on that relation, on
+// purpose — an order's line items should never silently disappear because
+// someone deleted the product later). Deactivating stays the right move
+// for anything with order history; this is for the rest.
+export async function deleteProduct(id: string): Promise<DeleteProductState> {
+  await requireAdmin();
+
+  try {
+    await prisma.product.delete({ where: { id } });
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return {
+      error: "Couldn't delete — this product has order history. Deactivate it instead.",
+    };
+  }
+
+  revalidatePath("/admin/products");
+  return undefined;
+}

@@ -6,15 +6,26 @@
    luxury-editorial feel rather than the softer rounded-corners look most
    storefronts default to. */
 :root {
-  --background: #f5f9fd;
-  --surface: #d6e8f5;
-  --surface-strong: #c2d9ee;
+  /* --background and --accent are pinned to the "Crisp Stucco" (#ECEFF4)
+     and "Azure Breeze" (#6FA8E5) swatches from the client's reference
+     palette — the closest two of its four colors to what the site already
+     used. Purple/lavender (the palette's other two swatches) deliberately
+     stay out of the site chrome; only the product photography carries that
+     tone. */
+  --background: #eceff4;
+  /* --surface/--surface-strong/--border/--border-strong are all tints or
+     opacities of the same Azure Breeze RGB (111, 168, 229) as --accent —
+     previously each was its own separately-picked pale blue, which read as
+     several near-but-different blues sitting next to each other. --ink
+     (navy) and --muted (secondary text) are untouched on purpose. */
+  --surface: #e9f2fb;
+  --surface-strong: #d7e7f8;
   --ink: #131d2b;
   --foreground: #131d2b;
   --muted: #6b88a0;
-  --accent: #5b9ec9;
-  --border: rgba(90, 140, 190, 0.2);
-  --border-strong: rgba(90, 140, 190, 0.45);
+  --accent: #6fa8e5;
+  --border: rgba(111, 168, 229, 0.25);
+  --border-strong: rgba(111, 168, 229, 0.5);
 
   /* Tailwind's bare `transition` utility (and transition-colors,
      transition-opacity, etc.) reads these two variables for its default
