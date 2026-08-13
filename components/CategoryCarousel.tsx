@@ -56,11 +56,18 @@ export default function CategoryCarousel({
             <Link
               key={category}
               href={`/products?category=${encodeURIComponent(category)}`}
-              className="hover-lift group block px-2.5 text-center sm:px-3"
+              className="hover-lift group block px-0.5 text-center sm:px-3"
               style={{ width: `${100 / total}%` }}
             >
               <CategoryIcon category={category} />
-              <p className="mt-3 text-sm font-medium uppercase tracking-[0.05em] text-[var(--ink)]">
+              {/* break-words is the real fix here — a single-word name like
+                  "BRACELET" has no space to wrap at, so without it the text
+                  paints outside its 45px-ish mobile tile (invisible to a
+                  layout-box overlap check, since the box itself is sized
+                  correctly; only the painted text bleeds into the next
+                  tile). Smaller text at the narrowest breakpoint means that
+                  break less often actually has to fire. */}
+              <p className="mt-3 break-words text-[11px] font-medium uppercase leading-tight tracking-[0.05em] text-[var(--ink)] sm:text-sm">
                 {category}
               </p>
             </Link>
