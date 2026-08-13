@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
+/* Design tokens — exact spec from the client-facing reference (colors sourced
+   from the product photography: powder blue velvet display boxes on lavender
+   satin). Radius is 0 everywhere on purpose: sharp corners throughout for a
+   luxury-editorial feel rather than the softer rounded-corners look most
+   storefronts default to. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f9fd;
+  --surface: #d6e8f5;
+  --surface-strong: #c2d9ee;
+  --ink: #131d2b;
+  --foreground: #131d2b;
+  --muted: #6b88a0;
+  --accent: #5b9ec9;
+  --border: rgba(90, 140, 190, 0.2);
+  --border-strong: rgba(90, 140, 190, 0.45);
+
+  /* Tailwind's bare `transition` utility (and transition-colors,
+     transition-opacity, etc.) reads these two variables for its default
+     speed — overriding them here slows every hover/focus state that
+     doesn't specify its own duration, sitewide, in one place, rather than
+     hunting down every bare `transition` class across the codebase.
+     150ms (Tailwind's default) reads as an instant snap; this is a
+     "gliding" curve instead — slow to start, decelerating in, closer to
+     how a premium site's micro-interactions actually move. */
+  --default-transition-duration: 450ms;
+  --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --font-sans: var(--font-jost);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-dm-mono);
+  --radius-none: 0px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* On-load entrance + shared hover treatments — pure CSS, no animation
+   library and no client component conversion needed since these run purely
+   on paint/hover regardless of Server/Client Component. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anim-fade-up {
+  /* Slower + a gentler deceleration curve (expo-out) than a plain ease-out
+     — reads as a calmer, more deliberate arrival rather than a snappy pop.
+     1.08s = 0.9s + 20%, per feedback that the homepage load-in still felt
+     a touch quick. */
+  animation: fade-up 1.08s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-up {
+    animation: none;
+  }
+}
+
+/* card-lift: shadow + translateY(-3px) on hover, per spec, for every
+   product/category card. */
+.hover-lift {
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px -14px rgb(19 29 43 / 0.3);
+}
+
+/* underline-hover: a 1px underline draws in from the left on hover, via a
+   pseudo-element rather than the text-decoration property, so its timing
+   and color are controllable. Applied to nav/footer links. */
+.underline-hover {
+  position: relative;
+}
+
+.underline-hover::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.underline-hover:hover::after {
+  transform: scaleX(1);
+}
+
+/* Hides the scrollbar on the category carousel track — the arrow buttons
+   are the intended control, native drag-scroll still works underneath,
+   just without a visible scrollbar competing with them visually.
+   scrollbar-width (Firefox) is set inline since it's a plain CSS property;
+   this covers the WebKit/Blink pseudo-element, which has no such property. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

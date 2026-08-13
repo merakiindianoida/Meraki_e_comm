@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  images      String[]
+  videoUrl    String?  // optional shoppable-video clip (see components/ShoppableVideoFeed.tsx) — most products won't have one
+  category    String   // "Nazariya", "Bracelet", "Bangle", "Stud", "Nose Pin", "Pendant", "Chain", "Anklet"
+  audience    String?  @default("Unisex") // "Kids", "Elders", "Men", "Women", "Unisex"
+  collections String[] @default([]) // curated groupings, e.g. "Birthday Gifting", "Marriage", "Kids Collection" — orthogonal to category/audience, a product can belong to several
+  weightGrams Decimal? @db.Decimal(10, 2)
+  purity      String?  @default("925 Silver")
+  sku         String?  @unique
+  stock       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+  reviews     Review[]
+}
+
+model Customer {
+  id         String   @id @default(uuid())
+  clerkId    String   @unique
+  email      String   @unique
+  name       String?
+  phone      String?
+  createdAt  DateTime @default(now())
+
+  orders     Order[]
+  addresses  Address[]
+  reviews    Review[]
+}
+
+// Saved shipping addresses for a signed-in customer — surfaced at checkout
+// as a picker instead of retyping the address every time. Denormalized
+// (full name/phone copied per address rather than always pulled from
+// Customer) so an address stays correct even if the customer's default
+// contact info changes later.
+model Address {
+  id         String   @id @default(uuid())
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId String
+
+  label      String? // "Home", "Office", etc. — optional, purely a display label
+  fullName   String
+  phone      String
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  pincode    String
+  isDefault  Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Order {
+  id              String      @id @default(uuid())
+
+  // Guest checkout: Clerk auth isn't wired up yet, so most orders won't
+  // have a Customer row. customerId stays optional and the guest* fields
+  // carry contact details directly on the order instead. Once auth lands,
+  // an authenticated checkout populates customerId and can leave the
+  // guest fields empty — no schema change needed at that point, which is
+  // the whole point of splitting it this way now rather than later.
+  // Enforced at the API layer (lib/orderSchema.ts): customerId XOR the
+  // three guest fields must be present — not expressible as a plain
+  // column constraint here.
+  customer        Customer?   @relation(fields: [customerId], references: [id])
+  customerId      String?
+  guestName       String?
+  guestEmail      String?
+  guestPhone      String?
+
+  status          OrderStatus @default(PENDING)
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  shippingAddress String
+
+  // PhonePe, not Razorpay — see project notes. merchantTransactionId is
+  // the id *we* generate and send to PhonePe; transactionId is theirs,
+  // returned once payment completes.
+  phonepeMerchantTransactionId String? @unique
+  phonepeTransactionId         String? @unique
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   String
+  quantity    Int
+  priceAtSale Decimal  @db.Decimal(10, 2)
+
+  // At most one review and one return request per purchased line item —
+  // both are how "verified purchase" is actually enforced (see
+  // app/orders/actions.ts), not a flag that could be spoofed.
+  review        Review?
+  returnRequest ReturnRequest?
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// One review per purchased order item — tying it to OrderItem rather than
+// just Product+Customer is what makes this a real "verified purchase"
+// review instead of a claim: you can only review something you actually
+// bought and were delivered, and only once per purchase.
+model Review {
+  id          String   @id @default(uuid())
+  product     Product  @relation(fields: [productId], references: [id])
+  productId   String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  customerId  String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
+  orderItemId String    @unique
+
+  rating      Int      // 1-5, enforced in lib/reviewSchema.ts
+  comment     String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  REFUNDED
+}
+
+// Same "tied to the purchased OrderItem" pattern as Review — a return
+// request only makes sense against a specific delivered line item, and
+// this is what stops a customer from filing one against an order that
+// isn't theirs or hasn't arrived yet (enforced in app/orders/actions.ts,
+// not just assumed from the model shape).
+model ReturnRequest {
+  id          String       @id @default(uuid())
+  orderItem   OrderItem    @relation(fields: [orderItemId], references: [id])
+  orderItemId String       @unique
+  reason      String
+  status      ReturnStatus @default(REQUESTED)
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
