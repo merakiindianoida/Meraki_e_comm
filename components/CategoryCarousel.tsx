@@ -56,7 +56,7 @@ export default function CategoryCarousel({
             <Link
               key={category}
               href={`/products?category=${encodeURIComponent(category)}`}
-              className="hover-lift group block shrink-0 px-2.5 text-center sm:px-3"
+              className="hover-lift group block px-2.5 text-center sm:px-3"
               style={{ width: `${100 / total}%` }}
             >
               <CategoryIcon category={category} />
