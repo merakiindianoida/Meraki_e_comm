@@ -6,7 +6,7 @@ import type { OrderStatus } from "@/app/generated/prisma/client";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Meraki doesn't have a verified domain yet, so this is the only sender
-// address Resend will accept — and until a domain is verified, Resend will
+// address Resend will accept - and until a domain is verified, Resend will
 // only actually deliver to the account's own signup email regardless of
 // what's in `to`. Swap this to something like "orders@merakijewelry.com"
 // the moment a real domain is verified in the Resend dashboard.
@@ -18,7 +18,7 @@ type OrderEmailItem = {
   priceAtSale: string | number;
 };
 
-// Every function here swallows its own errors rather than throwing —
+// Every function here swallows its own errors rather than throwing -
 // a failed email should never take down order creation or an admin status
 // update, which is why these are called fire-and-forget from their call
 // sites rather than awaited-and-checked.

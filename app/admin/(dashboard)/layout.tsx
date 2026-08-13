@@ -4,7 +4,7 @@ import AdminLogoutButton from "@/components/admin/AdminLogoutButton";
 // Shared chrome for every protected /admin/* page except /admin/login,
 // which lives in the sibling (auth) route group specifically so it never
 // gets this nav bar. Route groups (parenthesized folders) don't affect the
-// URL — /admin still resolves here, /admin/login resolves in (auth).
+// URL - /admin still resolves here, /admin/login resolves in (auth).
 export default function AdminDashboardLayout({
   children,
 }: {

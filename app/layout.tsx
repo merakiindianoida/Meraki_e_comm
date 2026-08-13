@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import "./globals.css";
 
 // Jost (body/UI) + DM Mono (prices, SKUs, tracked labels) + Playfair
-// Display (headings) — replaces the earlier Geist pairing to match the
+// Display (headings) - replaces the earlier Geist pairing to match the
 // client's typography spec.
 const jostSans = Jost({
   variable: "--font-jost",

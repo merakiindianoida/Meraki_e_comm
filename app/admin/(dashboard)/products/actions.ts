@@ -8,7 +8,7 @@ import { productFormSchema, slugify } from "@/lib/productSchema";
 
 export type ProductFormState = { error?: string } | undefined;
 
-// Shared between create and update — pulls the same shape out of a
+// Shared between create and update - pulls the same shape out of a
 // <form>'s FormData regardless of which action consumes it.
 function parseFormData(formData: FormData) {
   const imagesRaw = formData.get("images");
@@ -40,7 +40,7 @@ function parseFormData(formData: FormData) {
   };
 }
 
-// Loops rather than trusting the first guess — "fine-box-chain" might
+// Loops rather than trusting the first guess - "fine-box-chain" might
 // already exist from the seed data, so this walks -2, -3, ... until it
 // finds one that's free.
 async function uniqueSlug(base: string, excludeId?: string): Promise<string> {

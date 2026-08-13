@@ -6,7 +6,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import QuantitySelector from "@/components/QuantitySelector";
 import { formatPrice } from "@/lib/catalog";
 
-// Generic over line items rather than tied to a single product — this is
+// Generic over line items rather than tied to a single product - this is
 // what lets both /checkout (whatever's in the bag) and
 // /products/[slug]/checkout (a single-item Buy Now, bypassing the bag)
 // reuse the exact same form, summary and submit logic instead of forking
@@ -43,11 +43,11 @@ export default function CheckoutClient({
 }: {
   items: CheckoutLineItem[];
   onQuantityChange: (id: string, quantity: number) => void;
-  // Called right before redirecting to the confirmation page — e.g. the
+  // Called right before redirecting to the confirmation page - e.g. the
   // bag-based checkout clears the cart here; the single-item Buy Now flow
   // has nothing to clear, so it just omits this prop.
   onOrderPlaced?: () => void;
-  // Signed-in customer's saved addresses (see app/account/addresses) —
+  // Signed-in customer's saved addresses (see app/account/addresses) -
   // empty for a customer who has never saved one, in which case this just
   // falls back to the plain phone + address fields it always had.
   addresses?: SavedAddress[];

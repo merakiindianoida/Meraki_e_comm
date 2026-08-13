@@ -24,7 +24,7 @@ function parseFormData(formData: FormData) {
 
 // Every mutation below re-derives the signed-in customer from the Clerk
 // session and checks it against the address's customerId itself, rather
-// than trusting an id passed from the client alone — the same
+// than trusting an id passed from the client alone - the same
 // defense-in-depth pattern used by lib/adminAuth.ts and POST /api/orders.
 async function requireOwnedAddress(id: string, customerId: string) {
   const address = await prisma.address.findUnique({ where: { id } });
@@ -52,7 +52,7 @@ export async function createAddress(
   const data = parsed.data;
 
   await prisma.$transaction(async (tx) => {
-    // Only one address can be the default at a time — clear any existing
+    // Only one address can be the default at a time - clear any existing
     // default first rather than trying to enforce it with a DB constraint.
     if (data.isDefault) {
       await tx.address.updateMany({

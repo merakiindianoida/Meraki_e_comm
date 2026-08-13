@@ -10,7 +10,7 @@ const VALID_STATUSES = new Set<string>(Object.values(ReturnStatus));
 export async function updateReturnStatus(id: string, status: string) {
   await requireAdmin();
 
-  // Same reasoning as updateOrderStatus in ../orders/actions.ts — `status`
+  // Same reasoning as updateOrderStatus in ../orders/actions.ts - `status`
   // arrives from a <select> value, not guaranteed to be a real
   // ReturnStatus (a stale client, a forged request).
   if (!VALID_STATUSES.has(status)) {

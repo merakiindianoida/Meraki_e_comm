@@ -1,6 +1,6 @@
 "use client";
 
-// Plain controlled stepper — no internal state — so callers (product page,
+// Plain controlled stepper - no internal state - so callers (product page,
 // checkout summary) can each own the number for their own purposes
 // (one drives a Buy Now link, the other drives a live total) without two
 // sources of truth fighting each other.

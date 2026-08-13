@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { useCart, type CartItem } from "@/lib/useCart";
 
-// Used inside ProductCard's <Link> (grid tiles), so — same as
-// WishlistButton — clicks must stop propagation or they'd also trigger the
+// Used inside ProductCard's <Link> (grid tiles), so - same as
+// WishlistButton - clicks must stop propagation or they'd also trigger the
 // card's navigation to the product page. Briefly swaps its own label to
 // "Added" as the only feedback; there's no cart flyout/toast yet, and the
 // header bag count updating is the rest of the confirmation. The label
 // swap itself can't be animated (text content isn't a tweenable CSS
 // property), so a soft scale pulse eases in and back out around the swap
-// instead — that's what keeps the moment from reading as an abrupt jump.
+// instead - that's what keeps the moment from reading as an abrupt jump.
 export default function AddToBagButton({
   item,
   className,

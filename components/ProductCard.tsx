@@ -4,7 +4,7 @@ import WishlistButton from "@/components/WishlistButton";
 import AddToBagButton from "@/components/AddToBagButton";
 import { formatPrice } from "@/lib/catalog";
 
-// Reused on the homepage grid and the /products listing — kept as a plain
+// Reused on the homepage grid and the /products listing - kept as a plain
 // object shape (not the full Prisma Product type) so callers can pass in
 // either a raw Prisma row or hand-rolled data without fighting Decimal types.
 export type ProductCardData = {
@@ -19,7 +19,7 @@ export type ProductCardData = {
 
 // Caption (category/name/price) is overlaid on the image itself, white text
 // on a permanent dark gradient scrim, rather than sitting below in a
-// separate white block — that's what makes a photo-led card look premium.
+// separate white block - that's what makes a photo-led card look premium.
 // It works the same whether there's a real photo or the placeholder box
 // behind it; the placeholder still honestly says "X Image", it just also
 // carries the same caption treatment the real photos will use later.

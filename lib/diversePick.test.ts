@@ -15,7 +15,7 @@ describe("diversePick", () => {
       item("r1", "Ring"),
     ];
     // CATEGORIES order is Nazariya, Bracelet, Bangle, Stud, Nose Pin,
-    // Pendant, Chain, Anklet, Ring, Toe Ring, Necklace, Earrings — so
+    // Pendant, Chain, Anklet, Ring, Toe Ring, Necklace, Earrings - so
     // Bracelet and Ring should each get picked before a second Necklace.
     const picked = diversePick(pool, 3);
     expect(picked.map((p) => p.id)).toEqual(["b1", "r1", "n1"]);
@@ -39,7 +39,7 @@ describe("diversePick", () => {
   it("falls back to a stable category order for categories outside the known taxonomy", () => {
     const pool = [item("x", "Brooch"), item("y", "Brooch"), item("z", "Anklet")];
     const picked = diversePick(pool, 3);
-    // Anklet is in CATEGORIES, Brooch isn't — Anklet's single item comes
+    // Anklet is in CATEGORIES, Brooch isn't - Anklet's single item comes
     // first, then the unknown category fills in after.
     expect(picked[0].id).toBe("z");
     expect(picked).toHaveLength(3);

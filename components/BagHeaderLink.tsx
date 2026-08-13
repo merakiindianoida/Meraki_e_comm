@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCart } from "@/lib/useCart";
 
 // Replaces the "coming soon" IconStub now that the bag actually works
-// (client-side, via localStorage — see lib/useCart.ts). Same pattern as
+// (client-side, via localStorage - see lib/useCart.ts). Same pattern as
 // WishlistHeaderLink: its own component so the count can be live without
 // making the async Server Component Header itself a Client Component.
 export default function BagHeaderLink() {

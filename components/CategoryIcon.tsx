@@ -1,4 +1,4 @@
-// Hand-drawn line icons for the 8 real categories — distinct per category,
+// Hand-drawn line icons for the 8 real categories - distinct per category,
 // each built from a few path segments (outline + a small filled "gem/bead"
 // accent) rather than one flat uniform-weight outline. This is a permanent
 // nav treatment, not a "photo pending" placeholder: unlike PlaceholderImage

@@ -1,6 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
 
-// Catch-all route ([[...sign-in]]) — Clerk's own internal steps (password
+// Catch-all route ([[...sign-in]]) - Clerk's own internal steps (password
 // reset, verification codes, etc.) navigate within this same route rather
 // than needing separate pages for each.
 export default function SignInPage() {

@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+# Claude Code tooling config — not part of the app, no reason for it to
+# live in a shared/client-facing repo
+/.claude

@@ -23,13 +23,13 @@ export default async function ProductDetailPage({
   }
 
   // `[null]` as the fallback (instead of an empty array) means the gallery
-  // always renders at least one slot — real photo if we have it, the
-  // placeholder box if we don't — rather than needing a separate
+  // always renders at least one slot - real photo if we have it, the
+  // placeholder box if we don't - rather than needing a separate
   // no-images-at-all branch further down.
   const images = product.images.length > 0 ? product.images : [null];
   const inStock = product.stock > 0;
 
-  // Exact stock counts and internal SKUs aren't shown to visitors — both
+  // Exact stock counts and internal SKUs aren't shown to visitors - both
   // leak real business data (sell-through rate per product, and for SKUs,
   // total catalog size + add order via the sequential numbering). "Only a
   // few left" below a threshold is the normal, expected amount of urgency

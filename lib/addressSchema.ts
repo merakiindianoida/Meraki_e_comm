@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Shared between the address form (client-side validation feedback) and
-// the create/update Server Actions in app/account/addresses/actions.ts —
+// the create/update Server Actions in app/account/addresses/actions.ts -
 // same division of responsibility as lib/orderSchema.ts and
 // lib/productSchema.ts.
 export const addressFormSchema = z.object({

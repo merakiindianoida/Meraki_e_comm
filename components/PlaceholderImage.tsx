@@ -1,6 +1,6 @@
 // Stand-in for a product photo until the real shoot is uploaded. Deliberately
 // plain (dashed border, plain-text label) rather than a fake icon/illustration
-// so it never gets mistaken for a finished asset — see product images note
+// so it never gets mistaken for a finished asset - see product images note
 // in project memory for why (client is still supplying photos in batches).
 export default function PlaceholderImage({
   category,

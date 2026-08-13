@@ -9,7 +9,7 @@ import ReviewForm from "@/components/ReviewForm";
 import ReturnRequestForm from "@/components/ReturnRequestForm";
 import CancelOrderButton from "@/components/CancelOrderButton";
 
-// Requires a signed-in Clerk user — proxy.ts already redirects anonymous
+// Requires a signed-in Clerk user - proxy.ts already redirects anonymous
 // visitors here before this ever renders, but the check is repeated here
 // for the same reason every other auth-gated route in this repo repeats
 // it: a matcher change or a moved route shouldn't silently drop coverage.
@@ -22,7 +22,7 @@ export default async function MyOrdersPage() {
   const customer = await prisma.customer.findUnique({ where: { clerkId: userId } });
 
   // No Customer row yet just means this account has never completed
-  // checkout — an empty state, not an error.
+  // checkout - an empty state, not an error.
   const orders = customer
     ? await prisma.order.findMany({
         where: { customerId: customer.id },
@@ -90,7 +90,7 @@ export default async function MyOrdersPage() {
                       )}
                     </span>
                     {/* Rating and returns are per purchased item, and only
-                        make sense once it's actually arrived — no point
+                        make sense once it's actually arrived - no point
                         offering either while the order is still pending or
                         in transit. */}
                     {order.status === "DELIVERED" && (

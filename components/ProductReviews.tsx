@@ -26,7 +26,7 @@ function StarRow({ rating }: { rating: number }) {
   );
 }
 
-// First name + last initial only — a reviewer's full name is real personal
+// First name + last initial only - a reviewer's full name is real personal
 // data, and this is the same "first name, last initial" convention every
 // major storefront uses on public reviews.
 function displayName(fullName: string | null): string {

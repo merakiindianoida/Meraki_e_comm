@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useWishlist } from "@/lib/useWishlist";
 
 // Replaces the "coming soon" IconStub now that the wishlist actually works
-// (client-side, via localStorage — see lib/useWishlist.ts). Kept as its own
+// (client-side, via localStorage - see lib/useWishlist.ts). Kept as its own
 // component, separate from the async Server Component Header, since it
 // needs the live item count.
 export default function WishlistHeaderLink() {

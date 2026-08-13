@@ -3,7 +3,7 @@ import { CATEGORIES } from "@/lib/catalog";
 export type DiversePickItem = { id: string; category: string };
 
 // Round-robins across categories (in the site's own CATEGORIES order, then
-// anything else) instead of picking straight off createdAt — otherwise
+// anything else) instead of picking straight off createdAt - otherwise
 // whichever category was imported last (a big batch of necklaces, in this
 // case) dominates every homepage section instead of the page showing the
 // actual range of what's for sale.

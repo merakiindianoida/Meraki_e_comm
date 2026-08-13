@@ -6,7 +6,7 @@ import QuantitySelector from "@/components/QuantitySelector";
 import { useCart } from "@/lib/useCart";
 import { formatPrice } from "@/lib/catalog";
 
-// Client Component end to end — same reasoning as /wishlist: the cart only
+// Client Component end to end - same reasoning as /wishlist: the cart only
 // exists in localStorage (see lib/useCart.ts) until Clerk + a real backend
 // cart land, so there's nothing for a Server Component to fetch here.
 export default function BagPage() {

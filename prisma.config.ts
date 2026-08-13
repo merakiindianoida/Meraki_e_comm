@@ -9,7 +9,7 @@ export default defineConfig({
     path: "prisma/migrations",
     seed: "tsx prisma/seed.ts",
   },
-  // Migrate/introspection go through the direct (non-pooled) connection —
+  // Migrate/introspection go through the direct (non-pooled) connection -
   // Neon's PgBouncer pooler doesn't support the shadow-database operations
   // Migrate needs. The app itself still talks to the pooled DATABASE_URL
   // at runtime via lib/prisma.ts; this only affects the CLI.

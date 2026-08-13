@@ -4,7 +4,7 @@ import { formatPrice, stockStatus } from "@/lib/catalog";
 import ProductActiveToggle from "@/components/admin/ProductActiveToggle";
 import DeleteProductButton from "@/components/admin/DeleteProductButton";
 
-// Unlike the public /products listing, this includes inactive products —
+// Unlike the public /products listing, this includes inactive products -
 // the admin needs to see (and re-activate) discontinued pieces too.
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({

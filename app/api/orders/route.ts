@@ -5,12 +5,12 @@ import { createOrderSchema } from "@/lib/orderSchema";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 
 // Checkout requires a signed-in Clerk user (proxy.ts redirects anonymous
-// visitors to /sign-in before they ever reach this route) — but proxy is
+// visitors to /sign-in before they ever reach this route) - but proxy is
 // only an optimistic check, so this route re-verifies the session itself
 // rather than trusting that request even got here legitimately.
 
 // Distinguishes "this order can't be placed as requested" (bad but
-// expected — sold out mid-checkout) from a genuine server fault, so the
+// expected - sold out mid-checkout) from a genuine server fault, so the
 // catch block below can return the right status/message for each instead
 // of collapsing everything into a generic 500.
 class OrderError extends Error {}
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
   const { items, addressId } = parsed.data;
 
-  // Name/email are never taken from the request — they come straight from
+  // Name/email are never taken from the request - they come straight from
   // the verified Clerk session, so there's no way to place an order under
   // someone else's identity by editing the request body.
   const user = await currentUser();

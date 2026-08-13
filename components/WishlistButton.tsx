@@ -3,7 +3,7 @@
 import { useWishlist, type WishlistItem } from "@/lib/useWishlist";
 
 // Isolated to its own Client Component just for the onClick and wishlist
-// state — event handlers can't be passed as props from a Server Component,
+// state - event handlers can't be passed as props from a Server Component,
 // and ProductCard (which renders this) otherwise has no reason to be a
 // Client Component itself. Swallows the click so tapping the heart doesn't
 // also trigger the card's outer <Link> navigation.

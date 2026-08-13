@@ -1,4 +1,4 @@
-// Shared "not built yet" icon treatment — used for header actions (search,
+// Shared "not built yet" icon treatment - used for header actions (search,
 // wishlist, bag) and footer social links. Visual only, with a tooltip
 // explaining why, so none of it reads as a broken button. Once a feature
 // actually ships (cart, wishlist, social profiles), swap its call site over
@@ -11,7 +11,7 @@ export default function IconStub({
   label: string;
   path: string;
   // Override for dark backgrounds (e.g. the footer) where the default ink
-  // color would be invisible — caller passes a light color instead.
+  // color would be invisible - caller passes a light color instead.
   className?: string;
 }) {
   return (

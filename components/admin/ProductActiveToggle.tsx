@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { toggleProductActive } from "@/app/admin/(dashboard)/products/actions";
 
 // Server Actions can be called directly from a Client Component's event
-// handler (not just via <form action>) — useTransition gives us a pending
+// handler (not just via <form action>) - useTransition gives us a pending
 // state to disable the button mid-request without extra plumbing.
 export default function ProductActiveToggle({
   productId,

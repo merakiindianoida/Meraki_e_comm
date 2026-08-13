@@ -5,7 +5,7 @@ import Link from "next/link";
 import QuantitySelector from "@/components/QuantitySelector";
 import { useCart } from "@/lib/useCart";
 
-// Isolated to its own Client Component just for the quantity + cart state —
+// Isolated to its own Client Component just for the quantity + cart state -
 // the product detail page around it stays a Server Component. Add to Bag
 // adds the chosen quantity to the persisted cart and stays on this page
 // (same "keep shopping" convention as the grid cards); Buy Now instead

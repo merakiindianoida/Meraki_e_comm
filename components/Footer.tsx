@@ -4,10 +4,10 @@ import IconStub from "@/components/IconStub";
 
 // Deliberately doesn't repeat the category list from the header nav (that
 // was here before and just duplicated it). "Shop For" below uses audience
-// instead of category — a filter that otherwise has no entry point in the
+// instead of category - a filter that otherwise has no entry point in the
 // nav at all, so it's genuinely new rather than a re-listing.
 //
-// Dark navy background (#0E1822) — the one section on the site darker than
+// Dark navy background (#0E1822) - the one section on the site darker than
 // the editorial banner's --ink, so it reads as the true "floor" of the
 // page. The logo is monochrome black-on-white and would vanish here, so it
 // runs through Tailwind's `invert` filter just in this one spot; the
@@ -23,7 +23,7 @@ export default function Footer() {
             Fine 925 silver jewellery, made with soul &mdash; for every member
             of the family.
           </p>
-          {/* Instagram is real now (client's handle, confirmed 2026-08-08) —
+          {/* Instagram is real now (client's handle, confirmed 2026-08-08) -
               swapped over to an actual link per IconStub's own comment.
               Facebook stays a stub; no handle for that one yet. */}
           <div className="mt-4 flex gap-1">

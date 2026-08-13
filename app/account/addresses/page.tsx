@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import AddressManager from "@/components/AddressManager";
 
-// Requires a signed-in Clerk user — same pattern as app/orders/page.tsx.
+// Requires a signed-in Clerk user - same pattern as app/orders/page.tsx.
 export default async function AddressesPage() {
   const { userId } = await auth();
   if (!userId) {
@@ -13,7 +13,7 @@ export default async function AddressesPage() {
   const customer = await prisma.customer.findUnique({ where: { clerkId: userId } });
 
   // No Customer row yet just means this account has never saved an address
-  // or placed an order — an empty list, not an error.
+  // or placed an order - an empty list, not an error.
   const addresses = customer
     ? await prisma.address.findMany({
         where: { customerId: customer.id },

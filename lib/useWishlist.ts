@@ -2,10 +2,10 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
-// Client-side only wishlist — no Clerk auth wired up yet, so there's no
+// Client-side only wishlist - no Clerk auth wired up yet, so there's no
 // customer to attach a server-side wishlist to. Backed by localStorage and
 // a module-level store (via useSyncExternalStore) so every mounted
-// component — header badge, product card hearts, the /wishlist page —
+// component - header badge, product card hearts, the /wishlist page -
 // stays in sync without prop drilling or a context provider.
 export type WishlistItem = {
   id: string;
@@ -41,7 +41,7 @@ function persist() {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch {
-    // Private browsing / storage disabled — wishlist just won't survive a reload.
+    // Private browsing / storage disabled - wishlist just won't survive a reload.
   }
   listeners.forEach((listener) => listener());
 }

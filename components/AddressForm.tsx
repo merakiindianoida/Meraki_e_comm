@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import type { AddressFormState } from "@/app/account/addresses/actions";
 
-// Shared by both "add new address" and "edit address" — same fields
+// Shared by both "add new address" and "edit address" - same fields
 // either way, only the bound Server Action and pre-filled values differ.
 // Same division of responsibility as components/admin/ProductForm.tsx.
 export type AddressDefaults = {

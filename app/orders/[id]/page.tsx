@@ -10,7 +10,7 @@ import ReturnRequestForm from "@/components/ReturnRequestForm";
 import CancelOrderButton from "@/components/CancelOrderButton";
 
 // Checkout now always requires a signed-in Clerk user (see
-// POST /api/orders), so every order has a real owner — this page checks
+// POST /api/orders), so every order has a real owner - this page checks
 // that the signed-in visitor actually IS that owner rather than trusting
 // the UUID alone as the access control. A 404 rather than a 403 on
 // mismatch, so the response doesn't confirm an order with that id exists

@@ -20,7 +20,7 @@ function Chevron() {
   );
 }
 
-// Dropdown panel shell shared by all four nav items — hover-only (pure
+// Dropdown panel shell shared by all four nav items - hover-only (pure
 // CSS, no client component), fades + slides down via the same transition
 // on each. `trigger` is always a real <Link> so there's a sane fallback
 // destination on touch devices that can't hover to reveal the panel.
@@ -63,7 +63,7 @@ function DropdownLink({ href, children }: { href: string; children: React.ReactN
 }
 
 export default async function Header() {
-  // Powers the New Arrivals dropdown with real data — same "newest first"
+  // Powers the New Arrivals dropdown with real data - same "newest first"
   // ordering /products already uses by default, so the dropdown and its
   // "View all" link are always consistent with each other.
   const latest = await prisma.product.findMany({
@@ -75,7 +75,7 @@ export default async function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-[var(--background)]/90 shadow-sm backdrop-blur-md">
-      {/* Announcement strip — copy here should stay in sync with the trust
+      {/* Announcement strip - copy here should stay in sync with the trust
           bar on the homepage; both are hardcoded until the policy details
           (shipping threshold, returns window) are confirmed by the client. */}
       <div className="bg-[var(--ink)] py-2.5 text-center text-xs uppercase tracking-[0.2em] text-white">
@@ -90,7 +90,7 @@ export default async function Header() {
           i.e. 48px -> 57.6px). */}
       <div className="relative border-b border-[var(--border)] bg-white">
         <div className="flex items-center gap-4 px-4 py-3 sm:px-6 lg:gap-8 lg:px-10">
-          {/* Mobile nav — a native <details> disclosure instead of a client
+          {/* Mobile nav - a native <details> disclosure instead of a client
               component, same "no JS needed" spirit as NavDropdown's pure-CSS
               hover above. Only shown below md; the hover dropdowns in the
               desktop <nav> don't work on touch (no hover event to fire), so

@@ -21,7 +21,7 @@ function Star({ filled }: { filled: boolean }) {
   );
 }
 
-// Per order item, not per order — same reasoning as ReturnRequestForm: a
+// Per order item, not per order - same reasoning as ReturnRequestForm: a
 // review is always against one specific purchased product (see
 // Review.orderItemId in schema.prisma), so this renders once per line item.
 export default function ReviewForm({

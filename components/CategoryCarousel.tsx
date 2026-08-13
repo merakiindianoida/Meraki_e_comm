@@ -5,7 +5,7 @@ import Link from "next/link";
 import CategoryIcon from "@/components/CategoryIcon";
 import type { Category } from "@/lib/catalog";
 
-// Exactly 6 tiles visible at a time, centered, arrows page by 2 — with 8
+// Exactly 6 tiles visible at a time, centered, arrows page by 2 - with 8
 // real categories that means one arrow press reveals the remaining 2. Track
 // width/position are plain percentages of the track's own box, so the math
 // doesn't depend on measuring pixel widths in an effect: with VISIBLE=6

@@ -6,11 +6,11 @@ export const metadata: Metadata = {
   description: "Get in touch with Meraki for custom orders and enquiries.",
 };
 
-// Contact channels (email/phone/WhatsApp) aren't published yet — the client
+// Contact channels (email/phone/WhatsApp) aren't published yet - the client
 // hasn't given us real ones, and a placeholder-looking-real address would
 // be worse than none at all. The form itself is real (see
 // components/ContactForm.tsx + app/contact/actions.ts, sending via Resend)
-// — this page just doesn't publish a direct email/phone alongside it yet.
+// - this page just doesn't publish a direct email/phone alongside it yet.
 export default function ContactPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6">

@@ -11,7 +11,7 @@ const VALID_STATUSES = new Set<string>(Object.values(OrderStatus));
 export async function updateOrderStatus(id: string, status: string) {
   await requireAdmin();
 
-  // `status` arrives from a <select> value — a plain string, not
+  // `status` arrives from a <select> value - a plain string, not
   // guaranteed to be a real OrderStatus (a stale client, a forged
   // request). Reject anything that isn't one of the five real values
   // rather than letting Prisma throw further down.
@@ -25,7 +25,7 @@ export async function updateOrderStatus(id: string, status: string) {
   });
 
   // guestEmail/guestName are the point-in-time snapshot taken when the
-  // order was placed (see POST /api/orders) — using those instead of
+  // order was placed (see POST /api/orders) - using those instead of
   // looking up the Customer means this still works even if their profile
   // changes later. Fire-and-forget: sendOrderStatusEmail swallows its own
   // errors, so a failed email never breaks the admin's status update.

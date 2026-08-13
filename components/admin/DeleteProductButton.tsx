@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { deleteProduct } from "@/app/admin/(dashboard)/products/actions";
 
-// Deliberately a plain window.confirm rather than a custom modal — this is
+// Deliberately a plain window.confirm rather than a custom modal - this is
 // an internal single-admin tool, not customer-facing, and the one-line
 // native confirm is enough friction to stop a misclick without building
 // dialog UI for it. The real safety net is server-side: deleteProduct

@@ -9,7 +9,7 @@ const MAX_SEARCH_LENGTH = 100;
 // audience, or search) into whatever's currently in the URL, so filters
 // stack instead of clobbering each other. `"key" in patch` (rather than
 // `patch.key !== undefined`) is what lets a caller explicitly clear a
-// filter by passing `{ category: undefined }` — omitting the key entirely
+// filter by passing `{ category: undefined }` - omitting the key entirely
 // would just fall through to `current` instead.
 function chipHref(
   current: { category?: string; audience?: string; search?: string },

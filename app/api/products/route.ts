@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { toPublicProduct } from "@/lib/catalog";
 
-// Public catalog endpoint — used by anything outside a Server Component
+// Public catalog endpoint - used by anything outside a Server Component
 // (mobile clients, future client-side cart/search widgets, etc). The
 // site's own pages hit Prisma directly instead of calling this, since
 // they're already running on the server; this route exists for everyone else.
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ products: products.map(toPublicProduct) });
   } catch (error) {
-    // Log the real error server-side only — the client just gets a generic
+    // Log the real error server-side only - the client just gets a generic
     // message, never stack traces or query details.
     console.error("Error fetching products:", error);
     return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });

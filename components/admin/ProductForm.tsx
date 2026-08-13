@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { CATEGORIES, AUDIENCES, COLLECTIONS } from "@/lib/catalog";
 import type { ProductFormState } from "@/app/admin/(dashboard)/products/actions";
 
-// Shared by both /admin/products/new and /admin/products/[id]/edit — same
+// Shared by both /admin/products/new and /admin/products/[id]/edit - same
 // fields either way, only the bound Server Action and the pre-filled
 // values differ between create and edit.
 export type ProductDefaults = {
@@ -196,7 +196,7 @@ export default function ProductForm({
           className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 font-mono text-xs text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
         />
         {/* Live thumbnails so a pasted link can be eyeballed before saving
-            — a broken/wrong URL shows as a broken image right here instead
+            - a broken/wrong URL shows as a broken image right here instead
             of only being discovered after saving and checking the live
             product page. */}
         {imageUrls.length > 0 && (

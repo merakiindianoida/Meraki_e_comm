@@ -15,10 +15,10 @@ import ShoppableVideoFeed from "@/components/ShoppableVideoFeed";
 // / dark navy) for visual rhythm rather than every section running
 // together on the same background. (A dedicated newsletter section, and
 // later an Instagram embed section, both used to sit between the
-// editorial banner and reviews — both removed; the footer still has its
+// editorial banner and reviews - both removed; the footer still has its
 // own newsletter box.)
 
-// Client explicitly asked for these by name/piece, not by algorithm — the
+// Client explicitly asked for these by name/piece, not by algorithm - the
 // hero banner, the New Arrivals bento's big tile, and its last small tile
 // are pinned to specific products rather than "whatever's newest", which is
 // what every other slot on this page still uses.
@@ -26,7 +26,7 @@ const HERO_SLUG = "petal-design-bracelet";
 const NEW_ARRIVALS_HERO_SLUG = "elephant-bracelet";
 const NEW_ARRIVALS_LAST_SLUG = "pink-round-necklace";
 
-// "As Seen on Instagram" — reposted clips, not tied to any product listing
+// "As Seen on Instagram" - reposted clips, not tied to any product listing
 // (see components/ShoppableVideoFeed.tsx). Just a plain list of Cloudinary
 // video URLs; add or remove entries here as new reels go up.
 const INSTAGRAM_REELS = [
@@ -34,7 +34,7 @@ const INSTAGRAM_REELS = [
 ];
 
 export default async function Home() {
-  // One query for every active product — at this catalog size (under a
+  // One query for every active product - at this catalog size (under a
   // few hundred), doing the hero pin + diversification in JS below is
   // simpler and just as fast as trying to express "one per category,
   // round-robin, minus two pinned slugs" as SQL.
@@ -63,12 +63,12 @@ export default async function Home() {
   ];
   for (const p of featured) pinnedIds.add(p.id);
 
-  // "The Collection" grid — up to 16, diverse rather than newest-first.
+  // "The Collection" grid - up to 16, diverse rather than newest-first.
   // Excludes whatever's already pinned in New Arrivals so the same piece
   // doesn't appear twice on the page.
   const collection = diversePick(allActive, 16, pinnedIds);
 
-  // "Featured Pieces" — excludes whatever's already in New Arrivals so
+  // "Featured Pieces" - excludes whatever's already in New Arrivals so
   // this section doesn't just repeat the same 4 products directly above
   // the fold. There's no real "bestseller" signal (no order history yet),
   // so this stays an honestly-curated pick, not a sales claim.
@@ -78,7 +78,7 @@ export default async function Home() {
 
   return (
     <main>
-      {/* Hero — full viewport height on desktop, text/image panels run
+      {/* Hero - full viewport height on desktop, text/image panels run
           edge-to-edge (no outer container, no floating-card padding). On
           mobile a stacked two-column grid can't sensibly claim 100vh (each
           half would be a cramped ~50vh), so the height constraint only
@@ -86,10 +86,10 @@ export default async function Home() {
       <section className="relative border-b border-[var(--border)] md:h-screen">
         <div className="grid md:h-full md:grid-cols-2">
           <div className="relative flex flex-col justify-center overflow-hidden bg-[var(--surface)] px-6 py-14 sm:px-12 md:px-16 md:py-10 lg:px-20">
-            {/* Purely decorative rings — each is actually TWO concentric
+            {/* Purely decorative rings - each is actually TWO concentric
                 circles (an outer boundary, a faint tinted fill, an inner
                 boundary that punches the center back out to the panel's own
-                background). That band is what reads as a "thick ring" —
+                background). That band is what reads as a "thick ring" -
                 a single hairline circle looked too thin against the
                 reference. Both pairs share a center point (inner offset =
                 outer offset + half the thickness delta on each side) so
@@ -117,7 +117,7 @@ export default async function Home() {
               925 Silver &middot; Handcrafted
             </p>
             {/* clamp() keeps this fluid between breakpoints instead of
-                jumping at fixed text-5xl/6xl steps — floors at 2.5rem on
+                jumping at fixed text-5xl/6xl steps - floors at 2.5rem on
                 phones, guaranteed >=5.5rem by ~1280px+ desktop widths. */}
             <h1
               className="anim-fade-up relative mt-4 text-[clamp(2.25rem,2.5vw+3rem,5rem)] font-serif leading-[1.05] text-[var(--ink)]"
@@ -147,7 +147,7 @@ export default async function Home() {
               </Link>
             </div>
 
-            {/* Two real numbers only — no invented customer/order count to
+            {/* Two real numbers only - no invented customer/order count to
                 sit alongside them. See project notes on why. */}
             <div
               className="anim-fade-up relative mt-6 flex gap-10 border-t border-[var(--border-strong)] pt-5"
@@ -185,10 +185,10 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Trust bar — claims we can actually stand behind (hallmark status
+      {/* Trust bar - claims we can actually stand behind (hallmark status
           confirmed real, 2026-07-22; shipping confirmed real, 2026-07-29:
           self-shipped by the client, Delhi NCR only, no courier/Shiprocket
-          integration). Still deliberately no "Returns" claim — that policy
+          integration). Still deliberately no "Returns" claim - that policy
           hasn't been decided by the client yet. */}
       <section className="border-b border-[var(--border)] bg-white">
         <div className="mx-auto grid max-w-6xl grid-cols-2 gap-y-6 px-4 py-8 text-center sm:grid-cols-5 sm:px-6">
@@ -211,7 +211,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* New Arrivals — white, so it reads as a distinct beat after the
+      {/* New Arrivals - white, so it reads as a distinct beat after the
           light-blue trust bar rather than blending into it. */}
       <section className="bg-white px-4 py-20 sm:px-6">
         <div className="mx-auto max-w-6xl">
@@ -239,7 +239,7 @@ export default async function Home() {
             // fills reading-order: big tile takes col1 rows 1-2, then
             // featured[1] -> col2 row1, promo -> col3 row1, featured[2] ->
             // col2 row2, featured[3] -> col3 row2. Only "NEW" is shown as a
-            // badge (derived from real createdAt) — no invented "-21%
+            // badge (derived from real createdAt) - no invented "-21%
             // SALE" or "TRENDING" tags, since there's no discount field or
             // trending logic backing those.
             <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-3 sm:grid-rows-2">

@@ -5,11 +5,11 @@ export const metadata: Metadata = {
   description: "Shipping, cancellations & returns, privacy, and terms for Meraki.",
 };
 
-// Single page with anchored sections rather than four separate routes —
+// Single page with anchored sections rather than four separate routes -
 // small site, small policy surface, easier for a first-time visitor to
 // scan the whole thing than to hunt across pages. Content here is honest
 // about what's actually decided vs. still open with the client (see
-// project notes) — a plausible-sounding fake GSTIN or return window would
+// project notes) - a plausible-sounding fake GSTIN or return window would
 // be worse than a plainly marked "to be confirmed", the same principle
 // behind the disabled contact form and "coming soon" nav entries elsewhere.
 const SECTIONS = [

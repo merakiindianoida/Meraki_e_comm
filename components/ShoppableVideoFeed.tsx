@@ -45,7 +45,7 @@ function VideoTile({ src }: { src: string }) {
 }
 
 // Horizontal scroll-snap rail of short vertical clips reposted from
-// Instagram — pure social-content showcase, not tied to the Product model
+// Instagram - pure social-content showcase, not tied to the Product model
 // at all. No shop card, no price, no add-to-bag: nothing here is meant to
 // be bought, just watched. Renders nothing if there are no clips yet,
 // rather than a "coming soon" placeholder.

@@ -2,19 +2,19 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 // This project's Next.js version renamed `middleware.ts` to `proxy.ts` (see
-// node_modules/next/dist/docs/.../file-conventions/proxy.md) — Clerk's own
+// node_modules/next/dist/docs/.../file-conventions/proxy.md) - Clerk's own
 // setup docs already account for this rename, same underlying mechanism.
 //
 // Two gates live here:
 //  1. /admin/* requires a signed-in Clerk user with publicMetadata.role ===
-//     "admin" — separate from customer auth entirely (no shared login UI,
+//     "admin" - separate from customer auth entirely (no shared login UI,
 //     no link to it anywhere in the customer-facing nav).
-//  2. Checkout and order history require a signed-in user of any kind —
+//  2. Checkout and order history require a signed-in user of any kind -
 //     browsing, wishlist, and the bag stay completely public, matching a
 //     normal storefront (Amazon/Myntra-style: only buying and viewing your
 //     own past orders require an account).
 //
-// This is an *optimistic* check (fast, cookie/JWT-only, no DB calls) —
+// This is an *optimistic* check (fast, cookie/JWT-only, no DB calls) -
 // every admin Server Action independently re-verifies the same role via
 // lib/adminAuth.ts, since proxy matcher changes or a moved route could
 // otherwise silently drop coverage. See Next's Data Security guide.

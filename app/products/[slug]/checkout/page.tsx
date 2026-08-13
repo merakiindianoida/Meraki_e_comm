@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getSavedAddresses } from "@/lib/customer";
 import BuyNowCheckout from "@/components/BuyNowCheckout";
 
-// "Buy Now" express checkout for a single product — bypasses the bag
+// "Buy Now" express checkout for a single product - bypasses the bag
 // entirely. Reuses the same CheckoutClient (via BuyNowCheckout) as the
 // bag-based /checkout, just with a single, locally-held line item instead
 // of reading from the cart store.

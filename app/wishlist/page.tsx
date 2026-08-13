@@ -5,7 +5,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import { useWishlist } from "@/lib/useWishlist";
 import { formatPrice } from "@/lib/catalog";
 
-// Client Component end to end — the wishlist only exists in localStorage
+// Client Component end to end - the wishlist only exists in localStorage
 // (see lib/useWishlist.ts), so there's nothing for a Server Component to
 // fetch here.
 export default function WishlistPage() {

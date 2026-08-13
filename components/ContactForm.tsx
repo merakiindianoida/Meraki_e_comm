@@ -19,7 +19,7 @@ export default function ContactForm() {
 
   return (
     <form action={formAction} className="mx-auto mt-10 max-w-md space-y-4 text-left">
-      {/* Honeypot — invisible to a real visitor (off-screen, not just
+      {/* Honeypot - invisible to a real visitor (off-screen, not just
           display:none, since some bots skip fields that are display:none),
           never tabbable, autocomplete off so a browser doesn't offer to
           fill it. Anything in it on submit means a bot filled every input

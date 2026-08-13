@@ -12,7 +12,7 @@ export type ReturnRequestState = { error?: string } | undefined;
 export type ReviewState = { error?: string } | undefined;
 
 // Self-service cancellation only makes sense before the order has actually
-// shipped — once it's SHIPPED or DELIVERED, that's a return, not a
+// shipped - once it's SHIPPED or DELIVERED, that's a return, not a
 // cancellation (see the ReturnRequest flow instead). CANCELLED is already
 // terminal, and there's nothing to cancel from there either.
 const CANCELLABLE_STATUSES = new Set(["PENDING", "PAID"]);
@@ -28,7 +28,7 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderState> {
     include: { customer: true, items: true },
   });
 
-  // Ownership is checked the same way as app/orders/[id]/page.tsx — never
+  // Ownership is checked the same way as app/orders/[id]/page.tsx - never
   // trust that an order id belongs to the caller just because they have it.
   if (!order || order.customer?.clerkId !== userId) {
     return { error: "Order not found." };
@@ -40,7 +40,7 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderState> {
 
   await prisma.$transaction(async (tx) => {
     // Stock was decremented at order-creation time (see POST
-    // /api/orders) — cancelling has to give it back, or every cancelled
+    // /api/orders) - cancelling has to give it back, or every cancelled
     // order would permanently understate real available stock.
     for (const item of order.items) {
       await tx.product.update({
