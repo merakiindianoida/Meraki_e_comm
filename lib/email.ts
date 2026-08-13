@@ -75,6 +75,43 @@ export async function sendOrderConfirmationEmail(params: {
   await send(params.to, `Order Confirmed — #${orderNumber}`, html);
 }
 
+// Meraki's own inbox for enquiries — set once here rather than threaded
+// through every call site, since (unlike order/status emails) there's only
+// ever one destination for a contact-form submission.
+const CONTACT_INBOX = "merakiindianoida@gmail.com";
+
+// The order/status emails above interpolate straight from authenticated
+// session data (Clerk name, a saved address) — this one is the one place
+// an anonymous visitor's free-text ends up in an HTML email, so it's the
+// one place that actually needs escaping before interpolation.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export async function sendContactEmail(params: {
+  name: string;
+  email: string;
+  message: string;
+}) {
+  const name = escapeHtml(params.name);
+  const email = escapeHtml(params.email);
+  const message = escapeHtml(params.message);
+
+  const html = `
+    <div style="font-family:sans-serif;color:#1a1a1a;max-width:480px;margin:0 auto;">
+      <h1 style="font-size:20px;">New enquiry from ${name}</h1>
+      <p style="color:#666;font-size:13px;">Reply-to: ${email}</p>
+      <p style="white-space:pre-wrap;">${message}</p>
+    </div>`;
+
+  await send(CONTACT_INBOX, `Contact form: ${name}`, html);
+}
+
 const STATUS_COPY: Partial<Record<OrderStatus, { subject: string; body: string }>> = {
   SHIPPED: {
     subject: "Your order has shipped",

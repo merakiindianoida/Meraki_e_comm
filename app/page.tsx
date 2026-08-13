@@ -97,19 +97,19 @@ export default async function Home() {
                 them, so they're safe to hide from screen readers. */}
             <div
               aria-hidden
-              className="pointer-events-none absolute -right-28 top-0 h-[27rem] w-[27rem] rounded-full border border-[rgba(90,140,190,0.35)] bg-[rgba(90,140,190,0.07)]"
+              className="pointer-events-none absolute -right-28 top-0 h-[27rem] w-[27rem] rounded-full border border-[rgba(111,168,229,0.35)] bg-[rgba(111,168,229,0.07)]"
             />
             <div
               aria-hidden
-              className="pointer-events-none absolute -right-[5.5rem] top-6 h-[24rem] w-[24rem] rounded-full border border-[rgba(90,140,190,0.35)] bg-[var(--surface)]"
+              className="pointer-events-none absolute -right-[5.5rem] top-6 h-[24rem] w-[24rem] rounded-full border border-[rgba(111,168,229,0.35)] bg-[var(--surface)]"
             />
             <div
               aria-hidden
-              className="pointer-events-none absolute -bottom-20 -right-8 h-44 w-44 rounded-full border border-[rgba(90,140,190,0.3)] bg-[rgba(90,140,190,0.07)]"
+              className="pointer-events-none absolute -bottom-20 -right-8 h-44 w-44 rounded-full border border-[rgba(111,168,229,0.3)] bg-[rgba(111,168,229,0.07)]"
             />
             <div
               aria-hidden
-              className="pointer-events-none absolute -bottom-16 -right-4 h-36 w-36 rounded-full border border-[rgba(90,140,190,0.3)] bg-[var(--surface)]"
+              className="pointer-events-none absolute -bottom-16 -right-4 h-36 w-36 rounded-full border border-[rgba(111,168,229,0.3)] bg-[var(--surface)]"
             />
 
             <p className="anim-fade-up relative flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-[var(--muted)]">
@@ -336,7 +336,7 @@ export default async function Home() {
               <div className="relative flex flex-col justify-center overflow-hidden bg-[var(--surface)] p-8">
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute -bottom-10 -right-10 h-32 w-32 rounded-full border border-[rgba(90,140,190,0.35)]"
+                  className="pointer-events-none absolute -bottom-10 -right-10 h-32 w-32 rounded-full border border-[rgba(111,168,229,0.35)]"
                 />
                 <p className="relative text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
                   Handcrafted
@@ -397,7 +397,7 @@ export default async function Home() {
       {/* Shop by category — light blue, arrow-controlled carousel (client
           component); everything else on this page stays a Server
           Component. */}
-      <section className="border-y border-[var(--border)] bg-[#EAF3FB] py-20">
+      <section className="border-y border-[var(--border)] bg-[var(--surface)] py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <p className="text-sm uppercase tracking-[0.3em] text-[var(--muted)]">
             Explore
@@ -493,7 +493,7 @@ export default async function Home() {
           reserved for the New Arrivals section — and no star
           ratings/review counts, no BESTSELLER/TRENDING/SALE tags, same
           reasoning as The Collection and Reviews sections. */}
-      <section className="bg-[#EAF3FB] px-4 py-20 sm:px-6">
+      <section className="bg-[var(--surface)] px-4 py-20 sm:px-6">
         <div className="mx-auto max-w-6xl">
           <p className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-[var(--muted)]">
             <span className="h-px w-8 bg-[var(--border-strong)]" />
