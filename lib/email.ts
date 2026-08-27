@@ -26,7 +26,14 @@ async function send(to: string, subject: string, html: string) {
   try {
     const result = await resend.emails.send({ from: FROM, to, subject, html });
     if (result.error) {
-      console.error("Resend send failed:", result.error);
+      // Resend's error is an Error-like object whose message/name aren't
+      // enumerable own properties — logging it directly renders as "{}"
+      // in most consoles (including Next's dev overlay), which hides the
+      // one thing actually worth seeing. Pull those fields out explicitly.
+      console.error("Resend send failed:", {
+        name: result.error.name,
+        message: result.error.message,
+      });
     }
   } catch (error) {
     console.error("Error sending email:", error);
