@@ -59,8 +59,8 @@ export async function sendOrderConfirmationEmail(params: {
   const html = `
     <div style="font-family:sans-serif;color:#1a1a1a;max-width:480px;margin:0 auto;">
       <h1 style="font-size:20px;">Thank you, ${params.customerName ?? "friend"}.</h1>
-      <p>Your Meraki order #${orderNumber} has been received and is pending confirmation.
-      We'll be in touch to arrange payment and delivery.</p>
+      <p>Your Meraki order #${orderNumber} is confirmed — payment received.
+      We're getting it ready for delivery.</p>
       <table style="width:100%;border-collapse:collapse;margin:16px 0;">
         ${itemsRows(params.items)}
         <tr style="border-top:1px solid #ddd;font-weight:bold;">

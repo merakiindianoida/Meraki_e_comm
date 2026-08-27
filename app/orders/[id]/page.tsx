@@ -3,11 +3,14 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/catalog";
+import { getPhonePeOrderStatus } from "@/lib/phonepe";
+import { markOrderPaid, markOrderCancelled } from "@/lib/orderFulfillment";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import OrderStatusBadge from "@/components/OrderStatusBadge";
 import ReviewForm from "@/components/ReviewForm";
 import ReturnRequestForm from "@/components/ReturnRequestForm";
 import CancelOrderButton from "@/components/CancelOrderButton";
+import OrderStatusPoller from "@/components/OrderStatusPoller";
 
 // Checkout now always requires a signed-in Clerk user (see
 // POST /api/orders), so every order has a real owner - this page checks
@@ -27,7 +30,7 @@ export default async function OrderConfirmationPage({
     redirect(`/sign-in?redirect_url=/orders/${id}`);
   }
 
-  const order = await prisma.order.findUnique({
+  let order = await prisma.order.findUnique({
     where: { id },
     include: {
       items: { include: { product: true, returnRequest: true, review: true } },
@@ -39,26 +42,67 @@ export default async function OrderConfirmationPage({
     notFound();
   }
 
+  // The customer's browser redirects back here the moment PhonePe's
+  // checkout page finishes — but PhonePe's own webhook (the actual source
+  // of truth, see app/api/phonepe/webhook) is a separate, unordered
+  // delivery that can arrive a beat later. Rather than show "pending"
+  // limbo on first landing, ask PhonePe directly once here and finalize
+  // inline if it already knows the outcome — markOrderPaid/Cancelled are
+  // the same idempotent functions the webhook itself calls, so whichever
+  // of the two gets there first is a no-op for the other.
+  if (order.status === "PENDING") {
+    try {
+      const { state, transactionId } = await getPhonePeOrderStatus(order.id);
+      if (state === "COMPLETED") {
+        await markOrderPaid(order.id, transactionId);
+      } else if (state === "FAILED") {
+        await markOrderCancelled(order.id);
+      }
+      if (state !== "PENDING") {
+        order = await prisma.order.findUnique({
+          where: { id },
+          include: {
+            items: { include: { product: true, returnRequest: true, review: true } },
+            customer: true,
+          },
+        });
+      }
+    } catch (error) {
+      // PhonePe's status API being briefly unreachable shouldn't break
+      // this page — it just falls back to showing "pending" and letting
+      // the webhook (or the poller below, on a refresh) catch up.
+      console.error("PhonePe status check failed:", error);
+    }
+  }
+
+  if (!order) {
+    notFound();
+  }
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <div className="border-b border-[var(--border)] pb-8 text-center">
-        {/* "Order Confirmed / Thank you" framing only fits the moment right
-            after checkout — once the order has moved past PENDING, this
-            page is being revisited from My Orders, not landed on fresh. */}
+        {/* PENDING here means "waiting on PhonePe" specifically — the
+            fallback check above already tried to resolve it once, so
+            still being PENDING means either the customer bailed out of
+            PhonePe's checkout, or its webhook genuinely hasn't landed yet.
+            The poller below quietly refreshes this page so the moment
+            either resolves it, this message updates without the customer
+            having to do anything. */}
         {order.status === "PENDING" ? (
           <>
             <p className="text-xs uppercase tracking-[0.2em] text-[var(--accent)]">
-              Order Confirmed
+              Awaiting Payment
             </p>
             <h1 className="mt-2 font-serif text-3xl text-[var(--ink)]">
-              Thank you, {order.guestName ?? "friend"}.
+              Almost there, {order.guestName ?? "friend"}.
             </h1>
             <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[var(--muted)]">
-              Your order has been received and is pending confirmation. Online
-              payment isn&apos;t live yet, so we&apos;ll reach out at{" "}
-              {order.guestEmail ?? "the email you provided"} to arrange payment
-              and delivery.
+              We&apos;re confirming your payment with PhonePe — this page
+              will update automatically. If you closed the payment window
+              before finishing, you can safely place the order again.
             </p>
+            <OrderStatusPoller />
           </>
         ) : (
           <h1 className="font-serif text-3xl text-[var(--ink)]">Order Details</h1>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import QuantitySelector from "@/components/QuantitySelector";
 import { formatPrice } from "@/lib/catalog";
@@ -43,16 +42,15 @@ export default function CheckoutClient({
 }: {
   items: CheckoutLineItem[];
   onQuantityChange: (id: string, quantity: number) => void;
-  // Called right before redirecting to the confirmation page - e.g. the
-  // bag-based checkout clears the cart here; the single-item Buy Now flow
-  // has nothing to clear, so it just omits this prop.
+  // Called right before redirecting to PhonePe - e.g. the bag-based
+  // checkout clears the cart here; the single-item Buy Now flow has
+  // nothing to clear, so it just omits this prop.
   onOrderPlaced?: () => void;
   // Signed-in customer's saved addresses (see app/account/addresses) -
   // empty for a customer who has never saved one, in which case this just
   // falls back to the plain phone + address fields it always had.
   addresses?: SavedAddress[];
 }) {
-  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const defaultAddressId = addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id ?? null;
@@ -90,7 +88,9 @@ export default function CheckoutClient({
       }
 
       onOrderPlaced?.();
-      router.push(`/orders/${data.order.id}`);
+      // A full navigation, not router.push — PhonePe's checkout page is a
+      // different origin entirely, so this has to leave the Next.js app.
+      window.location.href = data.redirectUrl;
     } catch {
       setError("Couldn't reach the server. Check your connection and try again.");
       setSubmitting(false);
@@ -217,11 +217,10 @@ export default function CheckoutClient({
           disabled={submitting}
           className="w-full rounded-lg bg-[var(--accent)] px-6 py-3.5 text-sm uppercase tracking-[0.15em] text-white transition duration-300 hover:bg-[var(--accent)]/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? "Placing Order…" : "Place Order"}
+          {submitting ? "Redirecting to PhonePe…" : "Proceed to Pay"}
         </button>
         <p className="text-center text-[11px] text-[var(--muted)]">
-          Online payment (PhonePe) isn&apos;t live yet — your order is saved
-          as pending and we&apos;ll follow up to confirm.
+          You&apos;ll be redirected to PhonePe to complete payment securely.
         </p>
         {/* Confirmed with the client 2026-07-29: self-shipped, Delhi NCR
             only, no courier integration — restated here since this is the

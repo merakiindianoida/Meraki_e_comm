@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { createOrderSchema } from "@/lib/orderSchema";
-import { sendOrderConfirmationEmail } from "@/lib/email";
+import { createPhonePeOrder } from "@/lib/phonepe";
 
 // Checkout requires a signed-in Clerk user (proxy.ts redirects anonymous
 // visitors to /sign-in before they ever reach this route) - but proxy is
@@ -103,30 +103,25 @@ export async function POST(request: NextRequest) {
         return sum + parseFloat(product.price.toString()) * item.quantity;
       }, 0);
 
-      // Conditional decrement (`stock: { gte: quantity }` in the WHERE
-      // clause) instead of read-then-write — matches zero rows if someone
-      // else claimed the last units between the read above and this
-      // update, rather than allowing two concurrent checkouts to both
-      // succeed and oversell.
+      // Stock is only checked here, not decremented — a decrement now
+      // (before any money has actually moved) would let anyone lock up a
+      // one-off piece as "sold out" for free by starting checkout and
+      // never paying. The real, atomic decrement happens in the PhonePe
+      // webhook once payment is confirmed (see app/api/phonepe/webhook).
       for (const item of items) {
-        const result = await tx.product.updateMany({
-          where: { id: item.productId, stock: { gte: item.quantity } },
-          data: { stock: { decrement: item.quantity } },
-        });
-        if (result.count === 0) {
-          const product = productsById.get(item.productId)!;
+        const product = productsById.get(item.productId)!;
+        if (product.stock < item.quantity) {
           throw new OrderError(
             `Only ${product.stock} left of "${product.name}" — please update the quantity.`
           );
         }
       }
 
-      // No payment gateway yet, so every order lands here as PENDING —
-      // effectively a manual/COD order until PhonePe is wired up.
-      // guestName/guestEmail/guestPhone are a point-in-time snapshot (kept
-      // even though customerId is always set now) — a customer's profile
-      // can change after the fact, but the order should keep showing what
-      // was true when it was actually placed.
+      // Every order starts PENDING until PhonePe's webhook confirms
+      // payment. guestName/guestEmail/guestPhone are a point-in-time
+      // snapshot (kept even though customerId is always set now) — a
+      // customer's profile can change after the fact, but the order
+      // should keep showing what was true when it was actually placed.
       return tx.order.create({
         data: {
           customerId: customer.id,
@@ -147,25 +142,26 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    // Fire-and-forget: a failed email should never turn a successful order
-    // into a failed response — sendOrderConfirmationEmail swallows its own
-    // errors and just logs them (see lib/email.ts).
-    if (email) {
-      void sendOrderConfirmationEmail({
-        to: email,
-        customerName: name,
-        orderId: order.id,
-        items: order.items.map((item) => ({
-          name: item.product.name,
-          quantity: item.quantity,
-          priceAtSale: item.priceAtSale.toString(),
-        })),
-        totalAmount: order.totalAmount.toString(),
-        shippingAddress: order.shippingAddress,
+    // The customer never sees this order again until they've either paid
+    // or bailed out, so the confirmation email waits for the webhook too
+    // (see app/api/phonepe/webhook) — sending it here would tell someone
+    // "thank you for your order" before they've actually paid for it.
+    try {
+      const { redirectUrl } = await createPhonePeOrder({
+        merchantOrderId: order.id,
+        amountPaise: Math.round(parseFloat(order.totalAmount.toString()) * 100),
+        redirectUrl: new URL(`/orders/${order.id}`, request.nextUrl.origin).toString(),
       });
+      return NextResponse.json({ order: { id: order.id }, redirectUrl }, { status: 201 });
+    } catch (phonepeError) {
+      // The order row already committed above, but with no way to pay for
+      // it — cancel it here rather than leaving a dead PENDING order
+      // behind with no path forward (stock was never touched, so there's
+      // nothing to release).
+      console.error("PhonePe order creation failed:", phonepeError);
+      await prisma.order.update({ where: { id: order.id }, data: { status: "CANCELLED" } });
+      throw new OrderError("Couldn't start the payment. Please try again.");
     }
-
-    return NextResponse.json({ order: { id: order.id } }, { status: 201 });
   } catch (error) {
     if (error instanceof OrderError) {
       return NextResponse.json({ error: error.message }, { status: 409 });

@@ -39,14 +39,18 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderState> {
   }
 
   await prisma.$transaction(async (tx) => {
-    // Stock was decremented at order-creation time (see POST
-    // /api/orders) - cancelling has to give it back, or every cancelled
-    // order would permanently understate real available stock.
-    for (const item of order.items) {
-      await tx.product.update({
-        where: { id: item.productId },
-        data: { stock: { increment: item.quantity } },
-      });
+    // Stock is only ever decremented once PhonePe confirms payment (see
+    // lib/orderFulfillment.ts) - a still-PENDING order never touched stock
+    // in the first place, so cancelling one has nothing to give back.
+    // Only a PAID order's cancellation needs the restore, or every
+    // pre-payment cancellation would incorrectly inflate real stock.
+    if (order.status === "PAID") {
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
     }
 
     await tx.order.update({
