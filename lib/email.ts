@@ -6,10 +6,14 @@ import type { OrderStatus } from "@/app/generated/prisma/client";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Meraki doesn't have a verified domain yet, so this is the only sender
-// address Resend will accept - and until a domain is verified, Resend will
-// only actually deliver to the account's own signup email regardless of
-// what's in `to`. Swap this to something like "orders@merakijewelry.com"
-// the moment a real domain is verified in the Resend dashboard.
+// address Resend will accept - and until a domain is verified, Resend
+// rejects sending to anyone except the exact email the account itself was
+// signed up with (confirmed 2026-08-27: a real order's confirmation email
+// failed because the customer's address wasn't that one — the payment and
+// order still went through fine, only the notification email didn't send).
+// Swap this to something like "orders@merakijewelry.com" the moment a real
+// domain is verified in the Resend dashboard — that's also what unblocks
+// sending to real customer addresses instead of just the account's own.
 const FROM = "Meraki <onboarding@resend.dev>";
 
 type OrderEmailItem = {
