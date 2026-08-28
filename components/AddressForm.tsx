@@ -2,19 +2,12 @@
 
 import { useActionState } from "react";
 import type { AddressFormState } from "@/app/account/addresses/actions";
+import AddressFields, { type AddressFieldDefaults } from "@/components/AddressFields";
 
 // Shared by both "add new address" and "edit address" - same fields
 // either way, only the bound Server Action and pre-filled values differ.
 // Same division of responsibility as components/admin/ProductForm.tsx.
-export type AddressDefaults = {
-  label?: string | null;
-  fullName?: string;
-  phone?: string;
-  line1?: string;
-  line2?: string | null;
-  city?: string;
-  state?: string;
-  pincode?: string;
+export type AddressDefaults = AddressFieldDefaults & {
   isDefault?: boolean;
 };
 
@@ -33,111 +26,7 @@ export default function AddressForm({
 
   return (
     <form action={formAction} className="space-y-4 border border-[var(--border-strong)] p-5">
-      <div>
-        <label htmlFor="label" className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
-          Label (optional)
-        </label>
-        <input
-          id="label"
-          name="label"
-          placeholder="Home, Office, ..."
-          defaultValue={defaults?.label ?? ""}
-          className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="fullName" className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
-            Full name
-          </label>
-          <input
-            id="fullName"
-            name="fullName"
-            required
-            defaultValue={defaults?.fullName}
-            className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-          />
-        </div>
-        <div>
-          <label htmlFor="phone" className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
-            Phone
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            required
-            defaultValue={defaults?.phone}
-            className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="line1" className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
-          Address line 1
-        </label>
-        <input
-          id="line1"
-          name="line1"
-          required
-          defaultValue={defaults?.line1}
-          className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="line2" className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
-          Address line 2 (optional)
-        </label>
-        <input
-          id="line2"
-          name="line2"
-          defaultValue={defaults?.line2 ?? ""}
-          className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-        />
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label htmlFor="city" className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
-            City
-          </label>
-          <input
-            id="city"
-            name="city"
-            required
-            defaultValue={defaults?.city}
-            className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-          />
-        </div>
-        <div>
-          <label htmlFor="state" className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
-            State
-          </label>
-          <input
-            id="state"
-            name="state"
-            required
-            defaultValue={defaults?.state}
-            className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-          />
-        </div>
-        <div>
-          <label htmlFor="pincode" className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
-            PIN code
-          </label>
-          <input
-            id="pincode"
-            name="pincode"
-            inputMode="numeric"
-            required
-            defaultValue={defaults?.pincode}
-            className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-          />
-        </div>
-      </div>
+      <AddressFields defaults={defaults} />
 
       <label className="flex items-center gap-2 text-sm text-[var(--ink)]">
         <input

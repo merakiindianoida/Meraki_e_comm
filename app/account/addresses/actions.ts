@@ -5,6 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { getOrCreateCustomer } from "@/lib/customer";
 import { addressFormSchema } from "@/lib/addressSchema";
+import { MAX_SAVED_ADDRESSES } from "@/lib/address";
 
 export type AddressFormState = { error?: string } | undefined;
 
@@ -50,6 +51,11 @@ export async function createAddress(
 
   const customer = await getOrCreateCustomer(userId);
   const data = parsed.data;
+
+  const existingCount = await prisma.address.count({ where: { customerId: customer.id } });
+  if (existingCount >= MAX_SAVED_ADDRESSES) {
+    return { error: `You've saved the maximum of ${MAX_SAVED_ADDRESSES} addresses — delete one to add another.` };
+  }
 
   await prisma.$transaction(async (tx) => {
     // Only one address can be the default at a time - clear any existing

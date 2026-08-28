@@ -3,6 +3,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { createOrderSchema } from "@/lib/orderSchema";
 import { createPhonePeOrder } from "@/lib/phonepe";
+import { MAX_SAVED_ADDRESSES, formatAddress } from "@/lib/address";
 
 // Checkout requires a signed-in Clerk user (proxy.ts redirects anonymous
 // visitors to /sign-in before they ever reach this route) - but proxy is
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { items, addressId } = parsed.data;
+  const { items, addressId, newAddress } = parsed.data;
 
   // Name/email are never taken from the request - they come straight from
   // the verified Clerk session, so there's no way to place an order under
@@ -47,23 +48,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const order = await prisma.$transaction(async (tx) => {
-      // A saved address's own phone number is used when addressId is
-      // given, so the Customer's on-file phone only gets touched by the
-      // one-off manual-entry path below.
       const customer = await tx.customer.upsert({
         where: { clerkId: userId },
-        update: addressId ? {} : { phone: parsed.data.phone },
-        create: {
-          clerkId: userId,
-          email: email ?? `${userId}@unknown.local`,
-          name,
-          phone: addressId ? undefined : parsed.data.phone,
-        },
+        update: {},
+        create: { clerkId: userId, email: email ?? `${userId}@unknown.local`, name },
       });
 
       // Resolve delivery details from whichever path was used: a saved
       // address (ownership re-checked here, never trusted from the client)
-      // or the phone + shippingAddress typed directly into the form.
+      // or a new one typed directly into the checkout form.
       let phone: string;
       let shippingAddress: string;
 
@@ -73,15 +66,20 @@ export async function POST(request: NextRequest) {
           throw new OrderError("That delivery address could not be found.");
         }
         phone = address.phone;
-        shippingAddress = [
-          address.fullName,
-          [address.line1, address.line2].filter(Boolean).join(", "),
-          `${address.city}, ${address.state} - ${address.pincode}`,
-          `Phone: ${address.phone}`,
-        ].join("\n");
+        shippingAddress = formatAddress(address);
       } else {
-        phone = parsed.data.phone!;
-        shippingAddress = parsed.data.shippingAddress!;
+        phone = newAddress!.phone;
+        shippingAddress = formatAddress(newAddress!);
+
+        // Save it for reuse next time, same as adding one from the address
+        // book - but silently skip if they're already at the cap rather
+        // than blocking the purchase over it (see lib/address.ts).
+        const existingCount = await tx.address.count({ where: { customerId: customer.id } });
+        if (existingCount < MAX_SAVED_ADDRESSES) {
+          await tx.address.create({
+            data: { ...newAddress!, customerId: customer.id, isDefault: existingCount === 0 },
+          });
+        }
       }
 
       // Only productId + quantity come from the client — price and

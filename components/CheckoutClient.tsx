@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import QuantitySelector from "@/components/QuantitySelector";
+import AddressFields from "@/components/AddressFields";
 import { formatPrice } from "@/lib/catalog";
 
 // Generic over line items rather than tied to a single product - this is
@@ -75,7 +76,17 @@ export default function CheckoutClient({
           items: items.map((item) => ({ productId: item.id, quantity: item.quantity })),
           ...(useSavedAddress
             ? { addressId: selectedAddressId }
-            : { phone: form.get("phone"), shippingAddress: form.get("address") }),
+            : {
+                newAddress: {
+                  fullName: form.get("fullName"),
+                  phone: form.get("phone"),
+                  line1: form.get("line1"),
+                  line2: form.get("line2") || undefined,
+                  city: form.get("city"),
+                  state: form.get("state"),
+                  pincode: form.get("pincode"),
+                },
+              }),
         }),
       });
 
@@ -171,40 +182,7 @@ export default function CheckoutClient({
           </div>
         )}
 
-        {addingNew && (
-          <>
-            <div>
-              <label
-                htmlFor="phone"
-                className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]"
-              >
-                Phone
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="address"
-                className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]"
-              >
-                Shipping address
-              </label>
-              <textarea
-                id="address"
-                name="address"
-                required
-                rows={3}
-                className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
-              />
-            </div>
-          </>
-        )}
+        {addingNew && <AddressFields showLabel={false} />}
 
         {error && (
           <p role="alert" className="text-sm text-red-600">

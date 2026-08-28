@@ -57,22 +57,23 @@ export default function Footer() {
               title="WhatsApp"
               className="inline-flex h-10 w-10 items-center justify-center text-white/70 transition hover:text-[var(--accent)]"
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                className="h-6 w-6"
-              >
+              <svg viewBox="0 0 24 24" className="h-6 w-6">
                 <path
-                  d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  d="M12 2a9 9 0 00-7.75 13.5L3 21l5.5-1.75A9 9 0 1012 2z"
+                  fill="currentColor"
                 />
-                <path
-                  d="M9 10a.5.5 0 011 0v1a5 5 0 005 5h1a.5.5 0 000-1v-1a.5.5 0 00-1 0"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                {/* Phone handset, punched out in the footer's own background
+                    color so it reads as a cutout regardless of hover state. */}
+                <circle cx="9" cy="9" r="1.8" fill="#0E1822" />
+                <circle cx="15" cy="15" r="1.8" fill="#0E1822" />
+                <rect
+                  x="11.2"
+                  y="7.75"
+                  width="1.6"
+                  height="8.5"
+                  rx="0.8"
+                  fill="#0E1822"
+                  transform="rotate(45 12 12)"
                 />
               </svg>
             </a>
