@@ -54,6 +54,7 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
         name: item.product.name,
         quantity: item.quantity,
         priceAtSale: item.priceAtSale.toString(),
+        image: item.product.images[0] ?? null,
       })),
       totalAmount: order.totalAmount.toString(),
       shippingAddress: order.shippingAddress,

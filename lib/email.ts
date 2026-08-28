@@ -5,21 +5,28 @@ import type { OrderStatus } from "@/app/generated/prisma/client";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Meraki doesn't have a verified domain yet, so this is the only sender
-// address Resend will accept - and until a domain is verified, Resend
-// rejects sending to anyone except the exact email the account itself was
-// signed up with (confirmed 2026-08-27: a real order's confirmation email
-// failed because the customer's address wasn't that one — the payment and
-// order still went through fine, only the notification email didn't send).
-// Swap this to something like "orders@merakijewelry.com" the moment a real
-// domain is verified in the Resend dashboard — that's also what unblocks
-// sending to real customer addresses instead of just the account's own.
-const FROM = "Meraki <onboarding@resend.dev>";
+// merakifinesilver.com verified in Resend 2026-08-28 - this is what
+// unblocks sending to real customer addresses instead of only the
+// account's own signup email (see git history for the pre-verification
+// restriction this used to hit).
+const FROM = "Meraki <orders@merakifinesilver.com>";
+
+// orders@ isn't a monitored inbox — replies to any of these emails should
+// land somewhere a human actually reads, same address the contact form uses.
+const REPLY_TO = "merakiindianoida@gmail.com";
+
+// Product images live at relative /product-photos/... paths (see Product.images
+// in schema.prisma) - fine for the site itself, but an email client has no
+// origin to resolve a relative URL against, so these need to be absolute.
+// This MUST be the real production domain once deployed, or every image in
+// every order email 404s in the customer's inbox.
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 type OrderEmailItem = {
   name: string;
   quantity: number;
   priceAtSale: string | number;
+  image: string | null;
 };
 
 // Every function here swallows its own errors rather than throwing -
@@ -28,7 +35,7 @@ type OrderEmailItem = {
 // sites rather than awaited-and-checked.
 async function send(to: string, subject: string, html: string) {
   try {
-    const result = await resend.emails.send({ from: FROM, to, subject, html });
+    const result = await resend.emails.send({ from: FROM, to, subject, html, replyTo: REPLY_TO });
     if (result.error) {
       // Resend's error is an Error-like object whose message/name aren't
       // enumerable own properties — logging it directly renders as "{}"
@@ -44,18 +51,55 @@ async function send(to: string, subject: string, html: string) {
   }
 }
 
+// Absolute, falling back to a plain placeholder box when a product has no
+// image at all (existing data allows an empty images[] - see ProductCard)
+// rather than emitting a broken <img> tag.
+function itemImageCell(image: string | null): string {
+  if (!image) {
+    return `<td style="width:64px;padding:12px 0;"><div style="width:56px;height:56px;background:#f2efe9;border:1px solid #e6e0d4;"></div></td>`;
+  }
+  const src = image.startsWith("http") ? image : `${APP_URL}${image}`;
+  return `<td style="width:64px;padding:12px 0;"><img src="${src}" width="56" height="56" alt="" style="width:56px;height:56px;object-fit:cover;border:1px solid #e6e0d4;display:block;" /></td>`;
+}
+
 function itemsRows(items: OrderEmailItem[]): string {
   return items
     .map(
       (item) => `
-        <tr>
-          <td style="padding:8px 0;">${item.name} &times; ${item.quantity}</td>
-          <td style="padding:8px 0;text-align:right;">
+        <tr style="border-bottom:1px solid #eee;">
+          ${itemImageCell(item.image)}
+          <td style="padding:12px 12px;">
+            <div style="font-size:14px;color:#1a1a1a;">${item.name}</div>
+            <div style="font-size:12px;color:#999;margin-top:2px;">Qty ${item.quantity}</div>
+          </td>
+          <td style="padding:12px 0;text-align:right;font-size:14px;color:#1a1a1a;white-space:nowrap;">
             ${formatPrice(parseFloat(item.priceAtSale.toString()) * item.quantity)}
           </td>
         </tr>`
     )
     .join("");
+}
+
+// Shared chrome (wordmark header + footer) for every customer-facing email.
+// A styled text wordmark rather than the SVG logo - inline SVG support is
+// inconsistent across email clients (notably Outlook), and this domain has
+// no PNG/JPG copy of the mark to fall back to.
+function emailShell(bodyHtml: string): string {
+  return `
+    <div style="font-family:Georgia,'Times New Roman',serif;background:#faf9f6;padding:32px 16px;">
+      <div style="max-width:520px;margin:0 auto;background:#ffffff;border:1px solid #e6e0d4;">
+        <div style="background:#0E1822;padding:24px;text-align:center;">
+          <span style="font-family:Georgia,'Times New Roman',serif;font-size:22px;letter-spacing:0.15em;color:#ffffff;">MERAKI</span>
+        </div>
+        <div style="padding:28px 28px 8px;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;">
+          ${bodyHtml}
+        </div>
+        <div style="padding:20px 28px;margin-top:16px;border-top:1px solid #eee;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#999;text-align:center;">
+          Fine 925 silver jewellery, made with soul.<br />
+          Questions? Just reply to this email — we read every one.
+        </div>
+      </div>
+    </div>`;
 }
 
 export async function sendOrderConfirmationEmail(params: {
@@ -67,23 +111,25 @@ export async function sendOrderConfirmationEmail(params: {
   shippingAddress: string;
 }) {
   const orderNumber = params.orderId.slice(0, 8).toUpperCase();
-  const html = `
-    <div style="font-family:sans-serif;color:#1a1a1a;max-width:480px;margin:0 auto;">
-      <h1 style="font-size:20px;">Thank you, ${params.customerName ?? "friend"}.</h1>
-      <p>Your Meraki order #${orderNumber} is confirmed — payment received.
-      We're getting it ready for delivery.</p>
-      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-        ${itemsRows(params.items)}
-        <tr style="border-top:1px solid #ddd;font-weight:bold;">
-          <td style="padding:8px 0;">Total</td>
-          <td style="padding:8px 0;text-align:right;">${formatPrice(params.totalAmount)}</td>
-        </tr>
-      </table>
-      <p style="color:#666;font-size:13px;">Shipping to:<br />${params.shippingAddress.replace(/\n/g, "<br />")}</p>
-      <p style="color:#666;font-size:13px;">We currently ship within Delhi NCR only, with delivery in 3–10 business days.</p>
-    </div>`;
+  const body = `
+    <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:22px;margin:0 0 4px;">Thank you, ${params.customerName ?? "friend"}.</h1>
+    <p style="font-size:14px;color:#444;line-height:1.6;margin:0 0 20px;">
+      We've received your order and your payment — it's confirmed and we're
+      getting it ready. Delivery usually takes <strong>3–10 business days</strong>
+      (Delhi NCR only, for now).
+    </p>
+    <table style="width:100%;border-collapse:collapse;">
+      ${itemsRows(params.items)}
+      <tr>
+        <td colspan="2" style="padding:14px 0 0;font-size:14px;font-weight:bold;">Total</td>
+        <td style="padding:14px 0 0;text-align:right;font-size:14px;font-weight:bold;">${formatPrice(params.totalAmount)}</td>
+      </tr>
+    </table>
+    <p style="margin:24px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#999;">Order #${orderNumber}</p>
+    <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#999;">Shipping to</p>
+    <p style="margin:0;font-size:13px;color:#444;line-height:1.5;">${params.shippingAddress.replace(/\n/g, "<br />")}</p>`;
 
-  await send(params.to, `Order Confirmed — #${orderNumber}`, html);
+  await send(params.to, `Order Confirmed — #${orderNumber}`, emailShell(body));
 }
 
 // Meraki's own inbox for enquiries — set once here rather than threaded
@@ -151,12 +197,10 @@ export async function sendOrderStatusEmail(params: {
   if (!copy) return;
 
   const orderNumber = params.orderId.slice(0, 8).toUpperCase();
-  const html = `
-    <div style="font-family:sans-serif;color:#1a1a1a;max-width:480px;margin:0 auto;">
-      <h1 style="font-size:20px;">Hi ${params.customerName ?? "friend"},</h1>
-      <p>${copy.body}</p>
-      <p style="color:#666;font-size:13px;">Order #${orderNumber}</p>
-    </div>`;
+  const body = `
+    <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:22px;margin:0 0 12px;">Hi ${params.customerName ?? "friend"},</h1>
+    <p style="font-size:14px;color:#444;line-height:1.6;margin:0 0 16px;">${copy.body}</p>
+    <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#999;">Order #${orderNumber}</p>`;
 
-  await send(params.to, copy.subject, html);
+  await send(params.to, copy.subject, emailShell(body));
 }
