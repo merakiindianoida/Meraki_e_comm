@@ -572,14 +572,16 @@ export default async function Home() {
           No reviews yet &mdash; be the first to tell us what you think once
           your order arrives.
         </p>
-        <button
-          type="button"
-          disabled
-          title="Reviews are coming soon"
-          className="mt-8 cursor-not-allowed rounded-lg border border-[var(--border-strong)] px-8 py-3 text-xs uppercase tracking-[0.15em] text-[var(--muted)]"
+        {/* Reviews are tied to a delivered order item (see ReviewForm, used
+            from app/orders/[id]) - there's no product-agnostic "write a
+            review" to link to here, so this sends a customer to the order
+            they'd actually leave one from. */}
+        <Link
+          href="/orders"
+          className="mt-8 inline-block rounded-lg border border-[var(--border-strong)] px-8 py-3 text-xs uppercase tracking-[0.15em] text-[var(--ink)] transition duration-300 hover:border-[var(--accent)] hover:text-[var(--accent)]"
         >
-          Write a Review &mdash; Coming Soon
-        </button>
+          Write a Review
+        </Link>
       </section>
     </main>
   );

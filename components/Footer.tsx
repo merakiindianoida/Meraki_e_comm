@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AUDIENCES } from "@/lib/catalog";
 import IconStub from "@/components/IconStub";
+import NewsletterForm from "@/components/NewsletterForm";
 
 // Deliberately doesn't repeat the category list from the header nav (that
 // was here before and just duplicated it). "Shop For" below uses audience
@@ -115,30 +116,11 @@ export default function Footer() {
             Contact Us &rarr;
           </Link>
 
-          {/* Visual placeholder for a mailing list — not wired to anything
-              yet (no email service integrated). Styled disabled rather than
-              a fake form that would silently swallow submissions. The
-              homepage has its own newsletter section now too; this one
-              stays as a footer-level fallback for anyone who scrolls past
-              it. */}
           <div className="mt-4">
             <p className="text-xs uppercase tracking-[0.15em] text-white/40">
-              Newsletter — coming soon
+              Newsletter
             </p>
-            <div className="mt-2 flex max-w-xs">
-              <input
-                type="email"
-                disabled
-                placeholder="Your email"
-                className="w-full rounded-l-lg border border-white/20 bg-white/5 px-4 py-2 text-sm text-white/60 placeholder:text-white/40 disabled:cursor-not-allowed"
-              />
-              <button
-                disabled
-                className="cursor-not-allowed rounded-r-lg bg-white/10 px-4 text-xs uppercase tracking-[0.1em] text-white/60"
-              >
-                Join
-              </button>
-            </div>
+            <NewsletterForm />
           </div>
         </div>
       </div>

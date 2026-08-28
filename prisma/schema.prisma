@@ -167,3 +167,11 @@ model ReturnRequest {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
+
+// Footer newsletter signup — standalone rather than tied to Customer, since
+// most visitors who join haven't signed in (or ordered) at all.
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
