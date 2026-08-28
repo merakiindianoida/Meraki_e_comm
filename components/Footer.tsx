@@ -25,6 +25,7 @@ export default function Footer() {
           </p>
           {/* Instagram is real now (client's handle, confirmed 2026-08-08) -
               swapped over to an actual link per IconStub's own comment.
+              WhatsApp is real too (client's number, confirmed 2026-08-28).
               Facebook stays a stub; no handle for that one yet. */}
           <div className="mt-4 flex gap-1">
             <a
@@ -43,6 +44,32 @@ export default function Footer() {
               >
                 <path
                   d="M7 3h10a4 4 0 014 4v10a4 4 0 01-4 4H7a4 4 0 01-4-4V7a4 4 0 014-4zM12 8a4 4 0 100 8 4 4 0 000-8zM17 6.5h.01"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </a>
+            <a
+              href="https://wa.me/919599133900"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="WhatsApp"
+              className="inline-flex h-10 w-10 items-center justify-center text-white/70 transition hover:text-[var(--accent)]"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                className="h-6 w-6"
+              >
+                <path
+                  d="M20 12a8 8 0 10-14.6 4.6L4 20l3.5-1.3A8 8 0 0020 12z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M9 9.5c0 3.3 2.7 6 6 6 .6 0 .9-.5.9-1l-.2-1.1-1.5-.5-.7.8c-.9-.4-1.7-1.2-2.1-2.1l.8-.7-.5-1.5L10.6 9c-.6 0-1.1.4-1.6-.5z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
