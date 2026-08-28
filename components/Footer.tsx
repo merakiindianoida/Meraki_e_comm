@@ -64,12 +64,12 @@ export default function Footer() {
                 className="h-6 w-6"
               >
                 <path
-                  d="M20 12a8 8 0 10-14.6 4.6L4 20l3.5-1.3A8 8 0 0020 12z"
+                  d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
-                  d="M9 9.5c0 3.3 2.7 6 6 6 .6 0 .9-.5.9-1l-.2-1.1-1.5-.5-.7.8c-.9-.4-1.7-1.2-2.1-2.1l.8-.7-.5-1.5L10.6 9c-.6 0-1.1.4-1.6-.5z"
+                  d="M9 10a.5.5 0 011 0v1a5 5 0 005 5h1a.5.5 0 000-1v-1a.5.5 0 00-1 0"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
