@@ -7,7 +7,15 @@ import { z } from "zod";
 export const addressFormSchema = z.object({
   label: z.string().trim().max(40).optional(),
   fullName: z.string().trim().min(1, "Name is required").max(120),
-  phone: z.string().trim().min(6, "Enter a valid phone number").max(20),
+  // Indian mobile numbers: 10 digits starting 6-9, optional +91 prefix -
+  // this is a delivery contact number, not a general phone field. Spaces
+  // and hyphens are stripped before checking, so "+91 98765 43210" and
+  // "9876543210" both validate the same way.
+  phone: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/[\s-]/g, ""))
+    .refine((v) => /^(?:\+?91)?[6-9]\d{9}$/.test(v), "Enter a valid 10-digit mobile number"),
   line1: z.string().trim().min(1, "Address line is required").max(200),
   line2: z.string().trim().max(200).optional(),
   city: z.string().trim().min(1, "City is required").max(100),

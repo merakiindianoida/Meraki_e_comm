@@ -58,6 +58,9 @@ export default function AddressFields({
             name="phone"
             type="tel"
             required
+            pattern="[+0-9\s-]{10,17}"
+            title="10-digit mobile number"
+            maxLength={17}
             defaultValue={defaults?.phone}
             className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
           />
@@ -122,6 +125,9 @@ export default function AddressFields({
             id="pincode"
             name="pincode"
             inputMode="numeric"
+            pattern="\d{6}"
+            title="6-digit PIN code"
+            maxLength={6}
             required
             defaultValue={defaults?.pincode}
             className="mt-1 w-full border border-[var(--border)] bg-white px-3 py-2.5 text-sm text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
