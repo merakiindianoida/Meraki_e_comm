@@ -62,19 +62,6 @@ export default function Footer() {
                   d="M12 2a9 9 0 00-7.75 13.5L3 21l5.5-1.75A9 9 0 1012 2z"
                   fill="currentColor"
                 />
-                {/* Phone handset, punched out in the footer's own background
-                    color so it reads as a cutout regardless of hover state. */}
-                <circle cx="9" cy="9" r="1.8" fill="#0E1822" />
-                <circle cx="15" cy="15" r="1.8" fill="#0E1822" />
-                <rect
-                  x="11.2"
-                  y="7.75"
-                  width="1.6"
-                  height="8.5"
-                  rx="0.8"
-                  fill="#0E1822"
-                  transform="rotate(45 12 12)"
-                />
               </svg>
             </a>
             <IconStub
