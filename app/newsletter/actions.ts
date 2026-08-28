@@ -18,8 +18,7 @@ export async function subscribeToNewsletter(
     return { error: parsed.error.issues[0]?.message ?? "Please check your email." };
   }
 
-  // Already on the list is still a success from the visitor's side - there's
-  // no reason to surface a "you already signed up" error for a footer form.
+  // upsert so re-subscribing doesn't error out
   await prisma.newsletterSubscriber.upsert({
     where: { email: parsed.data.email },
     update: {},

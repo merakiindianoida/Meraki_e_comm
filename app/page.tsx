@@ -572,10 +572,7 @@ export default async function Home() {
           No reviews yet &mdash; be the first to tell us what you think once
           your order arrives.
         </p>
-        {/* Reviews are tied to a delivered order item (see ReviewForm, used
-            from app/orders/[id]) - there's no product-agnostic "write a
-            review" to link to here, so this sends a customer to the order
-            they'd actually leave one from. */}
+        {/* reviews only happen from a delivered order, so send them there */}
         <Link
           href="/orders"
           className="mt-8 inline-block rounded-lg border border-[var(--border-strong)] px-8 py-3 text-xs uppercase tracking-[0.15em] text-[var(--ink)] transition duration-300 hover:border-[var(--accent)] hover:text-[var(--accent)]"

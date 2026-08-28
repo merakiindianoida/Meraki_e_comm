@@ -168,8 +168,7 @@ model ReturnRequest {
   updatedAt   DateTime     @updatedAt
 }
 
-// Footer newsletter signup — standalone rather than tied to Customer, since
-// most visitors who join haven't signed in (or ordered) at all.
+// Footer newsletter signup, not tied to a Customer - most signups aren't signed in.
 model NewsletterSubscriber {
   id        String   @id @default(uuid())
   email     String   @unique
