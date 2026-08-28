@@ -31,6 +31,10 @@ const NEW_ARRIVALS_LAST_SLUG = "pink-round-necklace";
 // video URLs; add or remove entries here as new reels go up.
 const INSTAGRAM_REELS = [
   "https://res.cloudinary.com/tksnn8ya/video/upload/v1786570169/reel-1-meraki_oafscj.mp4",
+  "https://res.cloudinary.com/tksnn8ya/video/upload/v1787940181/5b7f69fe-cbed-4eab-9db7-27404311f521_yyp1ts.mp4",
+  "https://res.cloudinary.com/tksnn8ya/video/upload/v1787940138/0a793315-adb6-4ca6-bd92-defbc4abfe1b_a7ujaa.mp4",
+  "https://res.cloudinary.com/tksnn8ya/video/upload/v1787940129/04cb0d2e-147c-4aa3-9d96-7f1304dab03f_vxuflh.mp4",
+  "https://res.cloudinary.com/tksnn8ya/video/upload/v1787940121/8141c5ae-af58-482b-acd4-780468acb7e8_f6pogw.mp4",
 ];
 
 export default async function Home() {
