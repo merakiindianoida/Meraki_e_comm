@@ -105,8 +105,13 @@ export default async function ProductDetailPage({
               1:1 square now, so a square box + object-cover shows the
               whole photo with zero cropping and zero letterbox gaps; it
               just may not span the full column width, which beats either
-              overflowing past the buttons or showing white bars. */}
-          <div className="relative aspect-square w-full overflow-hidden border border-[var(--border-strong)] bg-white md:h-full md:w-auto md:flex-none">
+              overflowing past the buttons or showing white bars.
+              md:max-w-full caps it there too - a product with an unusually
+              tall text column (long description, review line, etc.) made
+              this compute wider than its own grid column and spill over
+              the buttons on the right; capping the width means it just
+              stops being a perfect square in that rare case instead. */}
+          <div className="relative aspect-square w-full overflow-hidden border border-[var(--border-strong)] bg-white md:h-full md:w-auto md:max-w-full md:flex-none">
             {images[0] ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
