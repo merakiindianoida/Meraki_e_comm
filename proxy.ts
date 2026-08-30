@@ -27,22 +27,32 @@ const isAuthRequiredRoute = createRouteMatcher([
   "/account(.*)",
 ]);
 
+// auth() is only called for routes that actually gate on it - calling it
+// unconditionally (as this used to) reads the session on every request,
+// including plain storefront browsing, which forces Next to treat those
+// pages as fully dynamic and skips the ISR caching added in
+// app/products/[slug]/page.tsx and friends for no reason, since browsing
+// was never gated in the first place.
 export default clerkMiddleware(async (auth, req) => {
-  const { userId, sessionClaims } = await auth();
-
   if (isAdminRoute(req) && !isAdminLoginRoute(req)) {
+    const { userId, sessionClaims } = await auth();
     if (!userId) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
     if (sessionClaims?.metadata?.role !== "admin") {
       return NextResponse.redirect(new URL("/admin/login?error=unauthorized", req.url));
     }
+    return NextResponse.next();
   }
 
-  if (isAuthRequiredRoute(req) && !userId) {
-    const signInUrl = new URL("/sign-in", req.url);
-    signInUrl.searchParams.set("redirect_url", req.nextUrl.pathname + req.nextUrl.search);
-    return NextResponse.redirect(signInUrl);
+  if (isAuthRequiredRoute(req)) {
+    const { userId } = await auth();
+    if (!userId) {
+      const signInUrl = new URL("/sign-in", req.url);
+      signInUrl.searchParams.set("redirect_url", req.nextUrl.pathname + req.nextUrl.search);
+      return NextResponse.redirect(signInUrl);
+    }
+    return NextResponse.next();
   }
 
   return NextResponse.next();
