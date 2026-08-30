@@ -9,6 +9,10 @@ import WishlistButton from "@/components/WishlistButton";
 import CategoryCarousel from "@/components/CategoryCarousel";
 import ShoppableVideoFeed from "@/components/ShoppableVideoFeed";
 
+// Same reasoning as the product pages - not personalized, doesn't need a
+// live DB query on every single visit.
+export const revalidate = 60;
+
 // Homepage: hero -> trust bar -> new arrivals -> category carousel ->
 // the collection (4x4 grid) -> editorial banner -> featured pieces ->
 // reviews. Section backgrounds deliberately alternate (white / light blue

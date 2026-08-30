@@ -94,6 +94,8 @@ export async function createProduct(
   }
 
   revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
   redirect(`/admin/products/${productId}/edit`);
 }
 
@@ -111,8 +113,9 @@ export async function updateProduct(
 
   const data = parsed.data;
 
+  let slug: string;
   try {
-    await prisma.product.update({
+    const updated = await prisma.product.update({
       where: { id },
       data: {
         name: data.name,
@@ -129,6 +132,7 @@ export async function updateProduct(
         videoUrl: data.videoUrl || null,
       },
     });
+    slug = updated.slug;
   } catch (error) {
     console.error("Error updating product:", error);
     return { error: "Couldn't save changes — check the SKU isn't already in use." };
@@ -136,13 +140,19 @@ export async function updateProduct(
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}/edit`);
+  revalidatePath(`/products/${slug}`);
+  revalidatePath("/products");
+  revalidatePath("/");
   return undefined;
 }
 
 export async function toggleProductActive(id: string, isActive: boolean) {
   await requireAdmin();
-  await prisma.product.update({ where: { id }, data: { isActive } });
+  const updated = await prisma.product.update({ where: { id }, data: { isActive } });
   revalidatePath("/admin/products");
+  revalidatePath(`/products/${updated.slug}`);
+  revalidatePath("/products");
+  revalidatePath("/");
 }
 
 export type DeleteProductState = { error?: string } | undefined;
@@ -157,7 +167,8 @@ export async function deleteProduct(id: string): Promise<DeleteProductState> {
   await requireAdmin();
 
   try {
-    await prisma.product.delete({ where: { id } });
+    const deleted = await prisma.product.delete({ where: { id } });
+    revalidatePath(`/products/${deleted.slug}`);
   } catch (error) {
     console.error("Error deleting product:", error);
     return {
@@ -166,5 +177,7 @@ export async function deleteProduct(id: string): Promise<DeleteProductState> {
   }
 
   revalidatePath("/admin/products");
+  revalidatePath("/products");
+  revalidatePath("/");
   return undefined;
 }

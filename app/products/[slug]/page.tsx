@@ -6,6 +6,14 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import ProductActions from "@/components/ProductActions";
 import ProductReviews from "@/components/ProductReviews";
 
+// Not personalized (same for every visitor) and doesn't change often enough
+// to justify a live DB query on every single visit - that was the whole
+// cause of the ~1-2s delay on clicking into a product. Admin edits below
+// (see app/admin/(dashboard)/products/actions.ts) revalidate this path
+// on-demand, so this window is just an upper bound on staleness, not the
+// only way this page gets fresh data.
+export const revalidate = 60;
+
 export default async function ProductDetailPage({
   params,
 }: {

@@ -1,4 +1,5 @@
 import "server-only";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 
@@ -44,6 +45,15 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
       },
     });
   });
+
+  // Stock just changed for these products - the cached product pages
+  // (see app/products/[slug]/page.tsx) shouldn't keep showing "in stock"
+  // for up to a minute after something actually sells out.
+  for (const item of order.items) {
+    revalidatePath(`/products/${item.product.slug}`);
+  }
+  revalidatePath("/products");
+  revalidatePath("/");
 
   if (order.guestEmail) {
     void sendOrderConfirmationEmail({

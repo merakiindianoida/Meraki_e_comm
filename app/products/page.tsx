@@ -3,6 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { AUDIENCES, CATEGORIES } from "@/lib/catalog";
 import ProductCard from "@/components/ProductCard";
 
+// Same reasoning as app/products/[slug]/page.tsx - not personalized, no
+// need for a live DB query per visit. Cached per distinct filter/search
+// combination.
+export const revalidate = 60;
+
 const MAX_SEARCH_LENGTH = 100;
 
 // Builds the href for a filter chip by merging one changed field (category,
