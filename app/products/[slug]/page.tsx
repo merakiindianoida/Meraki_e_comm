@@ -14,6 +14,22 @@ import ProductReviews from "@/components/ProductReviews";
 // only way this page gets fresh data.
 export const revalidate = 60;
 
+// Without this, a dynamic segment with no known paths never enters Next's
+// static/ISR pipeline at all - `revalidate` above silently does nothing
+// and every visit hits the DB live, which was the actual root cause of the
+// delay (confirmed: X-Vercel-Cache stayed MISS even with revalidate set,
+// while a plain static route like /policies correctly showed PRERENDER).
+// Listing every slug at build time is cheap at this catalog size, and any
+// product added later still works via on-demand generation + caching -
+// dynamicParams defaults to true, it just isn't pre-built until first hit.
+export async function generateStaticParams() {
+  const products = await prisma.product.findMany({
+    where: { isActive: true },
+    select: { slug: true },
+  });
+  return products.map((product) => ({ slug: product.slug }));
+}
+
 export default async function ProductDetailPage({
   params,
 }: {
