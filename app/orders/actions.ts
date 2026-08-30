@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { returnRequestSchema } from "@/lib/returnSchema";
 import { reviewSchema } from "@/lib/reviewSchema";
 import { getOrCreateCustomer } from "@/lib/customer";
+import { cancelOrderAndRestoreStock } from "@/lib/orderFulfillment";
 
 export type CancelOrderState = { error?: string } | undefined;
 export type ReturnRequestState = { error?: string } | undefined;
@@ -25,7 +26,7 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderState> {
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    include: { customer: true, items: true },
+    include: { customer: true },
   });
 
   // Ownership is checked the same way as app/orders/[id]/page.tsx - never
@@ -38,26 +39,7 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderState> {
     return { error: "This order can no longer be cancelled." };
   }
 
-  await prisma.$transaction(async (tx) => {
-    // Stock is only ever decremented once PhonePe confirms payment (see
-    // lib/orderFulfillment.ts) - a still-PENDING order never touched stock
-    // in the first place, so cancelling one has nothing to give back.
-    // Only a PAID order's cancellation needs the restore, or every
-    // pre-payment cancellation would incorrectly inflate real stock.
-    if (order.status === "PAID") {
-      for (const item of order.items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stock: { increment: item.quantity } },
-        });
-      }
-    }
-
-    await tx.order.update({
-      where: { id: orderId },
-      data: { status: "CANCELLED" },
-    });
-  });
+  await cancelOrderAndRestoreStock(orderId);
 
   revalidatePath("/orders");
   revalidatePath(`/orders/${orderId}`);

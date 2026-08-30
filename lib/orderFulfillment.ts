@@ -81,3 +81,42 @@ export async function markOrderCancelled(orderId: string) {
     data: { status: "CANCELLED" },
   });
 }
+
+// Shared by the customer's self-service cancel (app/orders/actions.ts) and
+// the admin order-status dropdown - same "restore stock only if it was ever
+// decremented" rule as markOrderPaid, just in reverse. A raw status flip to
+// CANCELLED on a PAID order would silently leave that stock decremented
+// forever, permanently understating real inventory for something that
+// never actually shipped.
+export async function cancelOrderAndRestoreStock(orderId: string) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { items: { include: { product: true } } },
+  });
+
+  if (!order || (order.status !== "PENDING" && order.status !== "PAID")) return;
+
+  await prisma.$transaction(async (tx) => {
+    if (order.status === "PAID") {
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+    }
+
+    await tx.order.update({
+      where: { id: orderId },
+      data: { status: "CANCELLED" },
+    });
+  });
+
+  if (order.status === "PAID") {
+    for (const item of order.items) {
+      revalidatePath(`/products/${item.product.slug}`);
+    }
+    revalidatePath("/products");
+    revalidatePath("/");
+  }
+}

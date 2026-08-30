@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/adminAuth";
 import { OrderStatus } from "@/app/generated/prisma/client";
 import { sendOrderStatusEmail } from "@/lib/email";
+import { markOrderPaid, cancelOrderAndRestoreStock } from "@/lib/orderFulfillment";
 
 const VALID_STATUSES = new Set<string>(Object.values(OrderStatus));
 
@@ -19,10 +20,34 @@ export async function updateOrderStatus(id: string, status: string) {
     throw new Error("Invalid order status");
   }
 
-  const order = await prisma.order.update({
-    where: { id },
-    data: { status: status as OrderStatus },
-  });
+  const current = await prisma.order.findUnique({ where: { id } });
+  if (!current) {
+    throw new Error("Order not found");
+  }
+
+  // PENDING -> PAID and (PENDING or PAID) -> CANCELLED both move real
+  // inventory (decrement or restore) - routed through the same functions
+  // the PhonePe webhook and customer self-cancel use, rather than a raw
+  // status flip that would silently desync stock from what actually sold.
+  // Every other transition (SHIPPED, DELIVERED, ...) never touches stock,
+  // so a plain update is correct there.
+  if (status === "PAID" && current.status === "PENDING") {
+    await markOrderPaid(id, current.phonepeTransactionId);
+  } else if (
+    status === "CANCELLED" &&
+    (current.status === "PENDING" || current.status === "PAID")
+  ) {
+    // Cancelling a SHIPPED/DELIVERED order isn't handled here on purpose -
+    // that's what the Return flow is for (see app/orders/actions.ts's
+    // requestReturn); falls through to the plain update below instead of
+    // silently no-op'ing against cancelOrderAndRestoreStock's own guard.
+    await cancelOrderAndRestoreStock(id);
+  } else {
+    await prisma.order.update({ where: { id }, data: { status: status as OrderStatus } });
+  }
+
+  const order = await prisma.order.findUnique({ where: { id } });
+  if (!order) return;
 
   // guestEmail/guestName are the point-in-time snapshot taken when the
   // order was placed (see POST /api/orders) - using those instead of
