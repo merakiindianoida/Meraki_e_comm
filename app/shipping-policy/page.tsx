@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PolicyPage, { PolicySection } from "@/components/PolicyPage";
 import { BUSINESS, POLICY } from "@/lib/siteInfo";
+import { SERVICE_AREA_LABEL } from "@/lib/serviceArea";
 
 export const metadata: Metadata = {
   title: "Shipping Policy | Meraki",
@@ -13,8 +14,9 @@ export default function ShippingPolicyPage() {
       <PolicySection title="Where we deliver">
         <p>
           We currently deliver within <strong className="text-[var(--ink)]">{POLICY.shippingArea}</strong>{" "}
-          only. If your address is outside this area, please contact us before ordering and
-          we&apos;ll let you know whether we can help.
+          only ({SERVICE_AREA_LABEL}). Checkout will let you know if your PIN code is outside
+          this area. If you&apos;re just outside it, please contact us and we&apos;ll see
+          whether we can help.
         </p>
       </PolicySection>
 

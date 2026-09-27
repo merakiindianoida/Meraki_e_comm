@@ -7,6 +7,8 @@ import { returnRequestSchema } from "@/lib/returnSchema";
 import { reviewSchema } from "@/lib/reviewSchema";
 import { getOrCreateCustomer } from "@/lib/customer";
 import { cancelOrderAndRestoreStock } from "@/lib/orderFulfillment";
+import { isWithinReturnWindow } from "@/lib/returnWindow";
+import { POLICY } from "@/lib/siteInfo";
 
 export type CancelOrderState = { error?: string } | undefined;
 export type ReturnRequestState = { error?: string } | undefined;
@@ -77,6 +79,11 @@ export async function requestReturn(
   }
   if (orderItem.returnRequest) {
     return { error: "A return has already been requested for this item." };
+  }
+  if (!isWithinReturnWindow(orderItem.order.deliveredAt)) {
+    return {
+      error: `Returns can only be requested within ${POLICY.returnWindowDays} days of delivery.`,
+    };
   }
 
   await prisma.returnRequest.create({

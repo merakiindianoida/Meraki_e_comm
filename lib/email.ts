@@ -204,3 +204,32 @@ export async function sendOrderStatusEmail(params: {
 
   await send(params.to, copy.subject, emailShell(body));
 }
+
+// Internal alert to the shop inbox - someone paid for a piece that had already sold out.
+export async function sendStockShortfallAlert(params: {
+  orderId: string;
+  customerName: string | null;
+  customerEmail: string | null;
+  customerPhone: string | null;
+  productNames: string[];
+}) {
+  const orderNumber = params.orderId.slice(0, 8).toUpperCase();
+  const products = params.productNames.map((n) => `<li>${escapeHtml(n)}</li>`).join("");
+  const html = `
+    <div style="font-family:sans-serif;color:#1a1a1a;max-width:480px;margin:0 auto;">
+      <h1 style="font-size:20px;color:#b91c1c;">Paid order needs attention — #${orderNumber}</h1>
+      <p>This customer has paid, but the following item(s) were already out of stock:</p>
+      <ul>${products}</ul>
+      <p style="font-size:13px;color:#444;">
+        Customer: ${escapeHtml(params.customerName ?? "—")}<br />
+        Email: ${escapeHtml(params.customerEmail ?? "—")}<br />
+        Phone: ${escapeHtml(params.customerPhone ?? "—")}
+      </p>
+      <p style="font-size:13px;color:#444;">
+        Please contact them to arrange a refund or a replacement:
+        <a href="${APP_URL}/admin/orders/${params.orderId}">open the order in admin</a>.
+      </p>
+    </div>`;
+
+  await send(CONTACT_INBOX, `ACTION NEEDED: out of stock after payment — #${orderNumber}`, html);
+}

@@ -3,12 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { stockStatus } from "@/lib/catalog";
 
 export default async function AdminDashboardPage() {
-  const [totalProducts, allActiveProducts, pendingOrders, pendingReturns] = await Promise.all([
-    prisma.product.count({ where: { isActive: true } }),
-    prisma.product.findMany({ where: { isActive: true }, select: { stock: true } }),
-    prisma.order.count({ where: { status: "PENDING" } }),
-    prisma.returnRequest.count({ where: { status: "REQUESTED" } }),
-  ]);
+  const [totalProducts, allActiveProducts, pendingOrders, pendingReturns, stockIssues] =
+    await Promise.all([
+      prisma.product.count({ where: { isActive: true } }),
+      prisma.product.findMany({ where: { isActive: true }, select: { stock: true } }),
+      prisma.order.count({ where: { status: "PENDING" } }),
+      prisma.returnRequest.count({ where: { status: "REQUESTED" } }),
+      // Paid orders with a line that sold out before payment landed - see lib/orderFulfillment.ts.
+      prisma.order.count({ where: { status: "PAID", items: { some: { stockShortfall: true } } } }),
+    ]);
 
   const lowOrOutOfStock = allActiveProducts.filter(
     (p) => stockStatus(p.stock) !== "in_stock"
@@ -19,13 +22,14 @@ export default async function AdminDashboardPage() {
     { label: "Low / Out of Stock", value: lowOrOutOfStock, href: "/admin/products" },
     { label: "Pending Orders", value: pendingOrders, href: "/admin/orders" },
     { label: "Pending Returns", value: pendingReturns, href: "/admin/returns" },
+    { label: "Paid but Out of Stock", value: stockIssues, href: "/admin/orders" },
   ];
 
   return (
     <div>
       <h1 className="font-serif text-3xl text-[var(--ink)]">Dashboard</h1>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {stats.map((stat) => (
           <Link
             key={stat.label}

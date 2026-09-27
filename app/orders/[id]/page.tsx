@@ -11,6 +11,7 @@ import ReviewForm from "@/components/ReviewForm";
 import ReturnRequestForm from "@/components/ReturnRequestForm";
 import CancelOrderButton from "@/components/CancelOrderButton";
 import OrderStatusPoller from "@/components/OrderStatusPoller";
+import { isWithinReturnWindow, returnDeadline } from "@/lib/returnWindow";
 
 // Checkout now always requires a signed-in Clerk user (see
 // POST /api/orders), so every order has a real owner - this page checks
@@ -145,10 +146,16 @@ export default async function OrderConfirmationPage({
             {order.status === "DELIVERED" && (
               <div className="flex w-full items-center gap-4 pl-20">
                 <ReviewForm orderItemId={item.id} existingReview={item.review} />
-                <ReturnRequestForm
-                  orderItemId={item.id}
-                  existingStatus={item.returnRequest?.status}
-                />
+                {item.returnRequest || isWithinReturnWindow(order.deliveredAt) ? (
+                  <ReturnRequestForm
+                    orderItemId={item.id}
+                    existingStatus={item.returnRequest?.status}
+                  />
+                ) : (
+                  <span className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
+                    Return window closed
+                  </span>
+                )}
               </div>
             )}
           </li>
@@ -161,6 +168,19 @@ export default async function OrderConfirmationPage({
           {formatPrice(order.totalAmount.toString())}
         </span>
       </div>
+
+      {order.status === "DELIVERED" && order.deliveredAt && isWithinReturnWindow(order.deliveredAt) && (
+        <p className="mt-3 text-xs text-[var(--muted)]">
+          Returns can be requested until{" "}
+          {returnDeadline(order.deliveredAt).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            timeZone: "Asia/Kolkata",
+          })}
+          .
+        </p>
+      )}
 
       <div className="mt-8 border-t border-[var(--border)] pt-6 text-sm text-[var(--muted)]">
         <p className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">

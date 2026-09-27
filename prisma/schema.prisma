@@ -95,6 +95,9 @@ model Order {
   phonepeMerchantTransactionId String? @unique
   phonepeTransactionId         String? @unique
 
+  // Set when admin marks the order DELIVERED - starts the return window (lib/returnWindow.ts).
+  deliveredAt     DateTime?
+
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -109,6 +112,8 @@ model OrderItem {
   productId   String
   quantity    Int
   priceAtSale Decimal  @db.Decimal(10, 2)
+  // Paid for, but stock had already run out - stock was never decremented for this line (lib/orderFulfillment.ts).
+  stockShortfall Boolean @default(false)
 
   // At most one review and one return request per purchased line item —
   // both are how "verified purchase" is actually enforced (see
@@ -173,4 +178,11 @@ model NewsletterSubscriber {
   id        String   @id @default(uuid())
   email     String   @unique
   createdAt DateTime @default(now())
+}
+
+// Fixed-window request counters for lib/rateLimit.ts - key is "<rule>:<ip or user id>".
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
 }

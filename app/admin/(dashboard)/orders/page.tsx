@@ -13,6 +13,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default async function AdminOrdersPage() {
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
+    include: { items: { where: { stockShortfall: true }, select: { id: true } } },
   });
 
   return (
@@ -61,6 +62,11 @@ export default async function AdminOrdersPage() {
                   >
                     {order.status}
                   </span>
+                  {order.items.length > 0 && order.status !== "CANCELLED" && (
+                    <span className="ml-2 bg-red-600 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em] text-white">
+                      Out of stock
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { createOrderSchema } from "@/lib/orderSchema";
 import { createPhonePeOrder } from "@/lib/phonepe";
 import { MAX_SAVED_ADDRESSES, formatAddress } from "@/lib/address";
+import { SERVICE_AREA_LABEL, isServiceablePincode } from "@/lib/serviceArea";
+import { RATE_LIMIT_MESSAGE, RATE_RULES, checkRateLimit } from "@/lib/rateLimit";
 
 // Checkout requires a signed-in Clerk user (proxy.ts redirects anonymous
 // visitors to /sign-in before they ever reach this route) - but proxy is
@@ -16,10 +18,24 @@ import { MAX_SAVED_ADDRESSES, formatAddress } from "@/lib/address";
 // of collapsing everything into a generic 500.
 class OrderError extends Error {}
 
+// Checked before anything is saved, so an out-of-area address never gets as far as a payment.
+function assertDeliverable(pincode: string) {
+  if (!isServiceablePincode(pincode)) {
+    throw new OrderError(
+      `Sorry, we don't deliver to PIN code ${pincode} yet. We currently deliver only within Delhi NCR (${SERVICE_AREA_LABEL}).`
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Please sign in to place an order." }, { status: 401 });
+  }
+
+  // Per account - every attempt creates an order row and a PhonePe payment session.
+  if (!(await checkRateLimit(userId, RATE_RULES.placeOrder))) {
+    return NextResponse.json({ error: RATE_LIMIT_MESSAGE }, { status: 429 });
   }
 
   let body: unknown;
@@ -65,9 +81,11 @@ export async function POST(request: NextRequest) {
         if (!address || address.customerId !== customer.id) {
           throw new OrderError("That delivery address could not be found.");
         }
+        assertDeliverable(address.pincode);
         phone = address.phone;
         shippingAddress = formatAddress(address);
       } else {
+        assertDeliverable(newAddress!.pincode);
         phone = newAddress!.phone;
         shippingAddress = formatAddress(newAddress!);
 

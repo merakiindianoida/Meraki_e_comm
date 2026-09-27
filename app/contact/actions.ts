@@ -2,6 +2,7 @@
 
 import { contactFormSchema } from "@/lib/contactSchema";
 import { sendContactEmail } from "@/lib/email";
+import { RATE_LIMIT_MESSAGE, RATE_RULES, checkRateLimit, clientIp } from "@/lib/rateLimit";
 
 export type ContactFormState = { error?: string; success?: boolean } | undefined;
 
@@ -21,6 +22,15 @@ export async function submitContact(
     // fills, so a failure there gets the same generic message as any
     // other - no reason to tip off a bot that it got caught.
     return { error: parsed.error.issues[0]?.message ?? "Please check your details." };
+  }
+
+  const allowed = await checkRateLimit(
+    await clientIp(),
+    RATE_RULES.contactShort,
+    RATE_RULES.contactDaily
+  );
+  if (!allowed) {
+    return { error: RATE_LIMIT_MESSAGE };
   }
 
   await sendContactEmail(parsed.data);

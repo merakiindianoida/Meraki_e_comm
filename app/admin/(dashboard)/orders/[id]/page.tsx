@@ -34,6 +34,16 @@ export default async function AdminOrderDetailPage({
         <OrderStatusSelect orderId={order.id} status={order.status} />
       </div>
 
+      {order.status !== "CANCELLED" && order.items.some((item) => item.stockShortfall) && (
+        <div className="mt-6 border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+          <p className="font-medium">This customer paid, but an item was already out of stock.</p>
+          <p className="mt-1">
+            Contact them to arrange a refund or a replacement. If you cancel the order, stock
+            won&apos;t be added back for the flagged item, since it was never taken out.
+          </p>
+        </div>
+      )}
+
       <div className="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
         <div>
           <ul className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
@@ -60,6 +70,11 @@ export default async function AdminOrderDetailPage({
                       {item.product.name}
                     </Link>
                     <p className="text-xs text-[var(--muted)]">Qty {item.quantity}</p>
+                    {item.stockShortfall && (
+                      <p className="text-xs font-medium uppercase tracking-[0.1em] text-red-600">
+                        Out of stock when paid
+                      </p>
+                    )}
                   </div>
                   <span className="font-mono text-sm text-[var(--ink)]">
                     {formatPrice(parseFloat(item.priceAtSale.toString()) * item.quantity)}

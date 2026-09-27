@@ -5,6 +5,7 @@ import PlaceholderImage from "@/components/PlaceholderImage";
 import QuantitySelector from "@/components/QuantitySelector";
 import AddressFields from "@/components/AddressFields";
 import { formatPrice } from "@/lib/catalog";
+import { SERVICE_AREA_LABEL } from "@/lib/serviceArea";
 
 // Generic over line items rather than tied to a single product - this is
 // what lets both /checkout (whatever's in the bag) and
@@ -204,7 +205,7 @@ export default function CheckoutClient({
             only, no courier integration — restated here since this is the
             last screen before an order is actually placed. */}
         <p className="text-center text-[11px] text-[var(--muted)]">
-          We currently ship within Delhi NCR only. Delivery takes 3–10
+          We currently ship within Delhi NCR only ({SERVICE_AREA_LABEL}). Delivery takes 3–10
           business days.
         </p>
       </form>

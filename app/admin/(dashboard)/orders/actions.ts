@@ -43,7 +43,13 @@ export async function updateOrderStatus(id: string, status: string) {
     // silently no-op'ing against cancelOrderAndRestoreStock's own guard.
     await cancelOrderAndRestoreStock(id);
   } else {
-    await prisma.order.update({ where: { id }, data: { status: status as OrderStatus } });
+    // Keeps the original delivery date if it's re-saved as DELIVERED; cleared if moved back.
+    const deliveredAt =
+      status === "DELIVERED" ? (current.status === "DELIVERED" ? current.deliveredAt : new Date()) : null;
+    await prisma.order.update({
+      where: { id },
+      data: { status: status as OrderStatus, deliveredAt },
+    });
   }
 
   const order = await prisma.order.findUnique({ where: { id } });

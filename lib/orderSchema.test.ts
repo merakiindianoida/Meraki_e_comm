@@ -12,16 +12,22 @@ describe("createOrderSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts a one-off phone + shippingAddress with no addressId", () => {
+  it("accepts a one-off newAddress with no addressId", () => {
     const result = createOrderSchema.safeParse({
       items,
-      phone: "9876543210",
-      shippingAddress: "123 Main Street, Delhi, 110001",
+      newAddress: {
+        fullName: "Test Customer",
+        phone: "9876543210",
+        line1: "123 Main Street",
+        city: "Delhi",
+        state: "Delhi",
+        pincode: "110001",
+      },
     });
     expect(result.success).toBe(true);
   });
 
-  it("rejects when neither addressId nor phone+shippingAddress is given", () => {
+  it("rejects when neither addressId nor newAddress is given", () => {
     const result = createOrderSchema.safeParse({ items });
     expect(result.success).toBe(false);
   });

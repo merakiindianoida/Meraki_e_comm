@@ -1,7 +1,7 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { sendOrderConfirmationEmail } from "@/lib/email";
+import { sendOrderConfirmationEmail, sendStockShortfallAlert } from "@/lib/email";
 
 // Shared by both the PhonePe webhook (the real source of truth) and the
 // order-confirmation page's fallback check (for when a customer's browser
@@ -19,6 +19,8 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
   // double-send the confirmation email.
   if (!order || order.status !== "PENDING") return;
 
+  const shortfalls: string[] = [];
+
   await prisma.$transaction(async (tx) => {
     for (const item of order.items) {
       const result = await tx.product.updateMany({
@@ -26,10 +28,10 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
         data: { stock: { decrement: item.quantity } },
       });
       if (result.count === 0) {
-        // Payment already succeeded on PhonePe's side, so this can't be
-        // undone by throwing — it needs a human to sort out (refund or
-        // source a replacement). Logging loudly is the whole mitigation
-        // for now; there's no admin "needs attention" flag yet to set.
+        // Flagged per line so admin sees it, and so a later cancel doesn't restore stock never taken.
+        await tx.orderItem.update({ where: { id: item.id }, data: { stockShortfall: true } });
+        shortfalls.push(item.product.name);
+        // Payment already went through, so throwing can't undo it - a human sorts it out from admin.
         console.error(
           `SOLD OUT AFTER PAYMENT: order ${order.id}, product ${item.productId} — customer paid but stock ran out. Needs manual follow-up.`
         );
@@ -54,6 +56,16 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
   }
   revalidatePath("/products");
   revalidatePath("/");
+
+  if (shortfalls.length > 0) {
+    void sendStockShortfallAlert({
+      orderId: order.id,
+      customerName: order.guestName,
+      customerEmail: order.guestEmail,
+      customerPhone: order.guestPhone,
+      productNames: shortfalls,
+    });
+  }
 
   if (order.guestEmail) {
     void sendOrderConfirmationEmail({
@@ -99,6 +111,7 @@ export async function cancelOrderAndRestoreStock(orderId: string) {
   await prisma.$transaction(async (tx) => {
     if (order.status === "PAID") {
       for (const item of order.items) {
+        if (item.stockShortfall) continue;
         await tx.product.update({
           where: { id: item.productId },
           data: { stock: { increment: item.quantity } },
