@@ -123,12 +123,8 @@ export default function Footer() {
           <p className="text-xs uppercase tracking-[0.2em] text-white/40">
             Get in Touch
           </p>
+          {/* Phone deliberately left off the footer - it's only on the contact page. */}
           <ul className="mt-3 space-y-1.5 text-sm text-white/80">
-            <li>
-              <a href={BUSINESS.phoneHref} className="underline-hover transition hover:text-[var(--accent)]">
-                {BUSINESS.phoneDisplay}
-              </a>
-            </li>
             <li>
               <a
                 href={`mailto:${BUSINESS.email}`}

@@ -48,10 +48,10 @@ export default function PolicyPage({
             {BUSINESS.email}
           </a>
           <br />
-          Phone / WhatsApp:{" "}
-          <a href={BUSINESS.phoneHref} className="underline-hover text-[var(--accent)]">
-            {BUSINESS.phoneDisplay}
-          </a>
+          Phone:{" "}
+          <Link href="/contact" className="underline-hover text-[var(--accent)]">
+            see Contact Us
+          </Link>
           <br />
           Support hours: {BUSINESS.supportHours}
         </p>
