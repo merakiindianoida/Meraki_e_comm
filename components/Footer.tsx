@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AUDIENCES } from "@/lib/catalog";
 import IconStub from "@/components/IconStub";
 import NewsletterForm from "@/components/NewsletterForm";
+import { BUSINESS, POLICY_PAGES } from "@/lib/siteInfo";
 
 // Deliberately doesn't repeat the category list from the header nav (that
 // was here before and just duplicated it). "Shop For" below uses audience
@@ -16,7 +17,7 @@ import NewsletterForm from "@/components/NewsletterForm";
 export default function Footer() {
   return (
     <footer className="bg-[#0E1822]">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Meraki" className="h-14 w-14 invert" />
@@ -94,21 +95,52 @@ export default function Footer() {
           </ul>
         </div>
 
+        {/* Help - the policy pages payment gateways and customers both look for */}
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-white/40">
+            Help
+          </p>
+          <ul className="mt-3 space-y-2 text-sm text-white/80">
+            {POLICY_PAGES.map((page) => (
+              <li key={page.href}>
+                <Link
+                  href={page.href}
+                  className="underline-hover transition hover:text-[var(--accent)]"
+                >
+                  {page.label}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href="/contact" className="underline-hover transition hover:text-[var(--accent)]">
+                Contact Us
+              </Link>
+            </li>
+          </ul>
+        </div>
+
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-white/40">
             Get in Touch
           </p>
-          <p className="mt-3 text-sm text-white/80">
-            Reach out for custom orders and bulk enquiries.
-          </p>
-          <Link
-            href="/contact"
-            className="underline-hover mt-2 inline-block text-sm text-[var(--accent)]"
-          >
-            Contact Us &rarr;
-          </Link>
+          <ul className="mt-3 space-y-1.5 text-sm text-white/80">
+            <li>
+              <a href={BUSINESS.phoneHref} className="underline-hover transition hover:text-[var(--accent)]">
+                {BUSINESS.phoneDisplay}
+              </a>
+            </li>
+            <li>
+              <a
+                href={`mailto:${BUSINESS.email}`}
+                className="underline-hover break-all transition hover:text-[var(--accent)]"
+              >
+                {BUSINESS.email}
+              </a>
+            </li>
+            <li className="text-white/60">{BUSINESS.supportHours}</li>
+          </ul>
 
-          <div className="mt-4">
+          <div className="mt-5">
             <p className="text-xs uppercase tracking-[0.15em] text-white/40">
               Newsletter
             </p>
@@ -117,11 +149,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/40 sm:px-6">
-        &copy; {new Date().getFullYear()} Meraki. All rights reserved.
-        {" · "}
-        <Link href="/policies" className="underline-hover hover:text-white/70">
-          Shipping, Returns &amp; Policies
-        </Link>
+        &copy; {new Date().getFullYear()} {BUSINESS.name}, {BUSINESS.location}. All rights reserved.
       </div>
     </footer>
   );

@@ -30,9 +30,7 @@ export type Audience = (typeof AUDIENCES)[number];
 
 // Curated groupings, orthogonal to category/audience (a Bangle could be in
 // both "Marriage" and "Birthday Gifting"). Real names from the client;
-// Product.collections is migrated and admin-editable, but no customer-facing
-// browse-by-collection page exists yet - still shown as "coming soon" in
-// the nav for that reason, not because the data layer is missing.
+// Product.collections is admin-editable only; the storefront nav entry was removed on the client's request.
 export const COLLECTIONS = ["Birthday Gifting", "Marriage", "Kids Collection"] as const;
 
 export type Collection = (typeof COLLECTIONS)[number];

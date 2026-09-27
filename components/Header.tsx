@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { AUDIENCES, CATEGORIES, COLLECTIONS, formatPrice } from "@/lib/catalog";
+import { AUDIENCES, CATEGORIES, formatPrice } from "@/lib/catalog";
 import SearchBar from "@/components/SearchBar";
 import AccountMenu from "@/components/AccountMenu";
 import WishlistHeaderLink from "@/components/WishlistHeaderLink";
@@ -20,7 +20,7 @@ function Chevron() {
   );
 }
 
-// Dropdown panel shell shared by all four nav items - hover-only (pure
+// Dropdown panel shell shared by all three nav items - hover-only (pure
 // CSS, no client component), fades + slides down via the same transition
 // on each. `trigger` is always a real <Link> so there's a sane fallback
 // destination on touch devices that can't hover to reveal the panel.
@@ -184,18 +184,6 @@ export default async function Header() {
                   </div>
                 </details>
 
-                <details className="py-3">
-                  <summary className="cursor-pointer uppercase tracking-[0.1em] text-[var(--ink)]/75">
-                    Shop by Collection
-                  </summary>
-                  <div className="mt-2 flex flex-col gap-1 pl-2">
-                    {COLLECTIONS.map((collection) => (
-                      <span key={collection} title="Coming soon" className="py-1.5 text-[var(--muted)]">
-                        {collection}
-                      </span>
-                    ))}
-                  </div>
-                </details>
               </div>
             </div>
           </details>
@@ -262,22 +250,6 @@ export default async function Header() {
               ))}
             </NavDropdown>
 
-            {/* Collections aren't wired to the database yet
-                (Product.collections is staged in schema.prisma but
-                unmigrated) — listed here so the nav structure is final,
-                but each entry is inert rather than linking to a filter
-                that doesn't work. */}
-            <NavDropdown trigger="Shop by Collection" href="/products">
-              {COLLECTIONS.map((collection) => (
-                <span
-                  key={collection}
-                  title="Coming soon"
-                  className="block cursor-not-allowed px-3 py-2 text-sm text-[var(--muted)]"
-                >
-                  {collection}
-                </span>
-              ))}
-            </NavDropdown>
           </nav>
 
           {/* ml-auto instead of justify-between on the row — lets the nav

@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 import ContactForm from "@/components/ContactForm";
+import { BUSINESS } from "@/lib/siteInfo";
 
 export const metadata: Metadata = {
   title: "Contact Us | Meraki",
   description: "Get in touch with Meraki for custom orders and enquiries.",
 };
 
-// Contact channels (email/phone/WhatsApp) aren't published yet - the client
-// hasn't given us real ones, and a placeholder-looking-real address would
-// be worse than none at all. The form itself is real (see
-// components/ContactForm.tsx + app/contact/actions.ts, sending via Resend)
-// - this page just doesn't publish a direct email/phone alongside it yet.
+// Direct channels up top for people who'd rather call or email than fill in the form.
 export default function ContactPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6">
@@ -23,6 +20,32 @@ export default function ContactPage() {
       <p className="mx-auto mt-5 max-w-md text-sm text-[var(--muted)]">
         Custom orders, bulk enquiries, or questions about a piece &mdash;
         reach out and we&apos;ll get back to you.
+      </p>
+
+      <dl className="mx-auto mt-10 grid max-w-lg gap-6 border-y border-[var(--border)] py-6 text-sm sm:grid-cols-3">
+        <div>
+          <dt className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Phone / WhatsApp</dt>
+          <dd className="mt-2">
+            <a href={BUSINESS.phoneHref} className="underline-hover text-[var(--ink)]">
+              {BUSINESS.phoneDisplay}
+            </a>
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Email</dt>
+          <dd className="mt-2">
+            <a href={`mailto:${BUSINESS.email}`} className="underline-hover break-all text-[var(--ink)]">
+              {BUSINESS.email}
+            </a>
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Support Hours</dt>
+          <dd className="mt-2 text-[var(--ink)]">{BUSINESS.supportHours}</dd>
+        </div>
+      </dl>
+      <p className="mt-4 text-xs text-[var(--muted)]">
+        {BUSINESS.name} &middot; {BUSINESS.location}
       </p>
 
       <ContactForm />
