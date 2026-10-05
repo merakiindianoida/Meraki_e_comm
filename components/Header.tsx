@@ -191,7 +191,7 @@ export default async function Header() {
 
           <Link href="/" className="flex shrink-0 items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="Meraki" className="h-[3.6rem] w-[3.6rem]" />
+            <img src="/logo.svg" alt="Meraki Fine Silver - 925 Silver Jewellery" className="h-[3.6rem] w-[3.6rem]" />
             <span className="hidden text-[10px] uppercase leading-tight tracking-[0.25em] text-[var(--accent)] sm:block">
               Fine Silver
               <br />

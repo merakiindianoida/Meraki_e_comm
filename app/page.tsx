@@ -124,7 +124,7 @@ export default async function Home() {
 
             <p className="anim-fade-up relative flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-[var(--muted)]">
               <span className="h-px w-8 bg-[var(--border-strong)]" />
-              925 Silver &middot; Handcrafted
+              Meraki Fine Silver &middot; Handcrafted 925 Silver
             </p>
             {/* clamp() keeps this fluid between breakpoints instead of
                 jumping at fixed text-5xl/6xl steps - floors at 2.5rem on
@@ -484,7 +484,7 @@ export default async function Home() {
           <span className="italic text-[var(--accent)]">your story.</span>
         </h2>
         <p className="mx-auto mt-6 max-w-md text-base text-white/70">
-          Meraki &mdash; from the Greek, meaning to do something with soul,
+          Meraki Fine Silver — the word meraki, from the Greek, means to do something with soul,
           creativity, and love. Each piece is hallmarked, handcrafted, and
           made to last a lifetime.
         </p>

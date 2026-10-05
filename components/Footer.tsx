@@ -19,9 +19,9 @@ export default function Footer() {
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="Meraki" className="h-14 w-14 invert" />
+          <img src="/logo.svg" alt="Meraki Fine Silver - 925 Silver Jewellery" className="h-14 w-14 invert" />
           <p className="mt-3 max-w-xs text-base text-white/70">
-            Fine 925 silver jewellery, made with soul &mdash; for every member
+            Meraki Fine Silver — 925 silver jewellery, made with soul — for every member
             of the family.
           </p>
           {/* Instagram is real now (client's handle, confirmed 2026-08-08) -
