@@ -34,6 +34,33 @@ const nextConfig: NextConfig = {
     // it here removes the guesswork.
     root: path.resolve(__dirname),
   },
+  images: {
+    // AVIF preferred (20-40% smaller than WebP); WebP fallback for older
+    // browsers. Both formats are generated automatically by Next's image
+    // optimizer based on the request's Accept header, so the same <Image>
+    // call works everywhere.
+    formats: ["image/avif", "image/webp"],
+    // Most product/hero/catalog views look fine at q=75; higher values
+    // blow out bytes for no perceptual gain at these sizes.
+    qualities: [60, 75, 85],
+    // Bump from the 4h default to 30 days — product + hero images don't
+    // churn that often, and regenerating optimized AVIF/WebP is the
+    // slowest part of a cold-cache hit on Lighthouse/Slow-4G throttling.
+    minimumCacheTTL: 2_592_000,
+    remotePatterns: [
+      // Product photos live on Cloudinary (res.cloudinary.com/tksnn8ya).
+      // Restricted to that exact account + the /image/upload path, not
+      // the whole Cloudinary CDN, per the docs' "be as specific as
+      // possible" rule for remotePatterns.
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/tksnn8ya/image/upload/**",
+        search: "",
+      },
+    ],
+  },
   async headers() {
     return [
       {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -177,11 +178,14 @@ export default async function ProductDetailPage({
               stops being a perfect square in that rare case instead. */}
           <div className="relative aspect-square w-full overflow-hidden border border-[var(--border-strong)] bg-white md:h-full md:w-auto md:max-w-full md:flex-none">
             {images[0] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={images[0]}
                 alt={product.name}
-                className="absolute inset-0 h-full w-full object-cover"
+                fill
+                preload
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+                quality={85}
               />
             ) : (
               <PlaceholderImage category={product.category} className="absolute inset-0" />
@@ -192,14 +196,15 @@ export default async function ProductDetailPage({
               {images.slice(1).map((image, i) => (
                 <div
                   key={i}
-                  className="aspect-square overflow-hidden border border-[var(--border-strong)]"
+                  className="relative aspect-square overflow-hidden border border-[var(--border-strong)]"
                 >
                   {image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={image}
                       alt={`${product.name} ${i + 2}`}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 25vw, 12vw"
+                      className="object-cover"
                     />
                   ) : (
                     <PlaceholderImage category={product.category} />

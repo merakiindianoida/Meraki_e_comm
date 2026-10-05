@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/catalog";
 import { STOREFRONT_CATEGORIES } from "@/lib/storefrontCatalog";
@@ -182,11 +183,14 @@ export default async function Home() {
 
           <div className="anim-fade-up relative h-80 overflow-hidden sm:h-[28rem] md:h-full">
             {latest?.images?.[0] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <Image
                 src={latest.images[0]}
                 alt={latest.name}
-                className="h-full w-full object-cover"
+                fill
+                preload
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+                quality={85}
               />
             ) : (
               <PlaceholderImage category={latest?.category} />
@@ -263,11 +267,12 @@ export default async function Home() {
                     className="group relative block aspect-[4/5] h-full overflow-hidden border border-[var(--border-strong)] sm:aspect-auto"
                   >
                     {featured[0].images?.[0] ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={featured[0].images[0]}
                         alt={featured[0].name}
-                        className="h-full w-full object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.05]"
                       />
                     ) : (
                       <PlaceholderImage category={featured[0].category} />

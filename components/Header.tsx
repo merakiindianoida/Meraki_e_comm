@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { AUDIENCES, formatPrice } from "@/lib/catalog";
 import { STOREFRONT_CATEGORIES } from "@/lib/storefrontCatalog";
@@ -190,8 +191,14 @@ export default async function Header() {
           </details>
 
           <Link href="/" className="flex shrink-0 items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="Meraki Fine Silver - 925 Silver Jewellery" className="h-[3.6rem] w-[3.6rem]" />
+            <Image
+              src="/logo.svg"
+              alt="Meraki Fine Silver - 925 Silver Jewellery"
+              width={144}
+              height={144}
+              unoptimized
+              className="h-[3.6rem] w-[3.6rem]"
+            />
             <span className="hidden text-[10px] uppercase leading-tight tracking-[0.25em] text-[var(--accent)] sm:block">
               Fine Silver
               <br />
