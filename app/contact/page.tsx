@@ -45,7 +45,7 @@ export default function ContactPage() {
         </div>
       </dl>
       <p className="mt-4 text-xs text-[var(--muted)]">
-        {BUSINESS.name} &middot; {BUSINESS.location}
+        {BUSINESS.name} &middot; {BUSINESS.location} &middot; Owner - Sumita Singh (MERAKI INDIA)
       </p>
 
       <ContactForm />

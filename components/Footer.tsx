@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AUDIENCES } from "@/lib/catalog";
-import IconStub from "@/components/IconStub";
 import NewsletterForm from "@/components/NewsletterForm";
 import { BUSINESS, POLICY_PAGES } from "@/lib/siteInfo";
 
@@ -26,9 +25,8 @@ export default function Footer() {
             of the family.
           </p>
           {/* Instagram is real now (client's handle, confirmed 2026-08-08) -
-              swapped over to an actual link per IconStub's own comment.
-              WhatsApp is real too (client's number, confirmed 2026-08-28).
-              Facebook stays a stub; no handle for that one yet. */}
+              swapped over to an actual link. WhatsApp is real too (client's
+              number, confirmed 2026-08-28). */}
           <div className="mt-4 flex gap-1">
             <a
               href="https://www.instagram.com/meraki_fine_silver/"
@@ -69,11 +67,6 @@ export default function Footer() {
                 />
               </svg>
             </a>
-            <IconStub
-              label="Facebook"
-              className="text-white/70"
-              path="M14 8h2V5h-2a4 4 0 00-4 4v2H8v3h2v6h3v-6h2.5l.5-3H13V9a1 1 0 011-1z"
-            />
           </div>
         </div>
 

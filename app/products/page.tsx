@@ -1,15 +1,79 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { AUDIENCES } from "@/lib/catalog";
 import { STOREFRONT_CATEGORIES } from "@/lib/storefrontCatalog";
 import ProductCard from "@/components/ProductCard";
+import { BUSINESS } from "@/lib/siteInfo";
+
+const SITE_URL = `https://${BUSINESS.website}`;
+const MAX_SEARCH_LENGTH = 100;
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; audience?: string; search?: string }>;
+}): Promise<Metadata> {
+  const { category, audience, search: rawSearch } = await searchParams;
+  const search = rawSearch?.trim().slice(0, MAX_SEARCH_LENGTH) || undefined;
+
+  const parts: string[] = [];
+  if (category) parts.push(`${category} collection`);
+  if (audience) parts.push(`for ${audience.toLowerCase()}`);
+  if (search) parts.push(`matching "${search}"`);
+
+  const titleTail = "Silver Jewellery | Meraki Fine Silver";
+  const title = parts.length > 0 ? `${parts.join(" ")} · ${titleTail}` : `Our Collection · ${titleTail}`;
+
+  const descriptionParts: string[] = [
+    "Shop handcrafted 925 silver jewellery",
+  ];
+  if (category) descriptionParts.push(`in ${category}`);
+  if (audience) descriptionParts.push(`crafted for ${audience.toLowerCase()}`);
+  if (search) descriptionParts.push(`— search results for "${search}"`);
+  descriptionParts.push(". BIS hallmarked. Delhi NCR delivery in 3–10 days.");
+
+  const description = descriptionParts.join("");
+  const params = new URLSearchParams();
+  if (category) params.set("category", category);
+  if (audience) params.set("audience", audience);
+  if (search) params.set("search", search);
+  const query = params.toString();
+  const canonical = `${SITE_URL}/products${query ? `?${query}` : ""}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    metadataBase: new URL(SITE_URL),
+    keywords: [
+      "meraki fine silver",
+      "925 silver jewellery india",
+      "handcrafted silver noida",
+      ...STOREFRONT_CATEGORIES,
+      ...(category ? [category] : []),
+      ...(audience ? [audience] : []),
+    ],
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: canonical,
+      siteName: "Meraki Fine Silver",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+    robots: { index: !search, follow: true },
+  };
+}
 
 // Same reasoning as app/products/[slug]/page.tsx - not personalized, no
 // need for a live DB query per visit. Cached per distinct filter/search
 // combination.
 export const revalidate = 60;
-
-const MAX_SEARCH_LENGTH = 100;
 
 // Builds the href for a filter chip by merging one changed field (category,
 // audience, or search) into whatever's currently in the URL, so filters

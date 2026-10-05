@@ -1,10 +1,71 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/catalog";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ProductActions from "@/components/ProductActions";
 import ProductReviews from "@/components/ProductReviews";
+import { BUSINESS } from "@/lib/siteInfo";
+
+const SITE_URL = `https://${BUSINESS.website}`;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await prisma.product.findUnique({ where: { slug } });
+
+  if (!product || !product.isActive) {
+    return {
+      title: "Product not found | Meraki Fine Silver",
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const title = `${product.name} | Meraki Fine Silver`;
+  const baseDesc = product.description?.trim()
+    ? `${product.description.trim().replace(/\s+/g, " ")} `
+    : "";
+  const description = `${baseDesc}925 silver ${product.category.toLowerCase()}${
+    product.audience ? ` for ${product.audience.toLowerCase()}` : ""
+  }. Handcrafted in ${BUSINESS.location}.`;
+  const image = product.images[0] ?? `${SITE_URL}/og-default.png`;
+  const canonical = `${SITE_URL}/products/${encodeURIComponent(product.slug)}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    metadataBase: new URL(SITE_URL),
+    keywords: [
+      product.name,
+      product.category,
+      "925 silver",
+      "meraki fine silver",
+      ...(product.audience ? [product.audience] : []),
+      "handcrafted jewellery",
+      "delhi ncr silver",
+    ],
+    openGraph: {
+      type: "product",
+      title,
+      description,
+      url: canonical,
+      siteName: "Meraki Fine Silver",
+      images: [{ url: image, alt: product.name }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [image],
+    },
+    robots: { index: true, follow: true },
+  };
+}
 
 // Not personalized (same for every visitor) and doesn't change often enough
 // to justify a live DB query on every single visit - that was the whole
