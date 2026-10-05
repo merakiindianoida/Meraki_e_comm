@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CATEGORIES } from "@/lib/catalog";
+import { STOREFRONT_CATEGORIES } from "@/lib/storefrontCatalog";
 
 // Cycles through real category names rather than made-up example queries -
 // every phrase here is something that will actually return results.
-const PHRASES = CATEGORIES.map((c) => `Search "${c}"...`);
+const PHRASES = STOREFRONT_CATEGORIES.map((c) => `Search "${c}"...`);
 const TYPE_SPEED_MS = 70;
 const DELETE_SPEED_MS = 35;
 const HOLD_MS = 1400;

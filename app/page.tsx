@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { CATEGORIES, formatPrice } from "@/lib/catalog";
+import { formatPrice } from "@/lib/catalog";
+import { STOREFRONT_CATEGORIES } from "@/lib/storefrontCatalog";
 import { diversePick } from "@/lib/diversePick";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import ProductCard from "@/components/ProductCard";
@@ -415,7 +416,7 @@ export default async function Home() {
           </h2>
         </div>
         <div className="mt-7">
-          <CategoryCarousel categories={CATEGORIES} />
+          <CategoryCarousel categories={STOREFRONT_CATEGORIES} />
         </div>
       </section>
 

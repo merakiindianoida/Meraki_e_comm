@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { AUDIENCES, CATEGORIES, formatPrice } from "@/lib/catalog";
+import { AUDIENCES, formatPrice } from "@/lib/catalog";
+import { STOREFRONT_CATEGORIES } from "@/lib/storefrontCatalog";
 import SearchBar from "@/components/SearchBar";
 import AccountMenu from "@/components/AccountMenu";
 import WishlistHeaderLink from "@/components/WishlistHeaderLink";
@@ -172,7 +173,7 @@ export default async function Header() {
                     Shop By Category
                   </summary>
                   <div className="mt-2 flex flex-col gap-1 pl-2">
-                    {CATEGORIES.map((category) => (
+                    {STOREFRONT_CATEGORIES.map((category) => (
                       <Link
                         key={category}
                         href={`/products?category=${encodeURIComponent(category)}`}
@@ -240,7 +241,7 @@ export default async function Header() {
             </NavDropdown>
 
             <NavDropdown trigger="Shop By Category" href="/products">
-              {CATEGORIES.map((category) => (
+              {STOREFRONT_CATEGORIES.map((category) => (
                 <DropdownLink
                   key={category}
                   href={`/products?category=${encodeURIComponent(category)}`}

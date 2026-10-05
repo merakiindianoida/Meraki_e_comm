@@ -171,7 +171,7 @@ export default async function ProductDetailPage({
           </p>
 
           {product.description && (
-            <p className="mt-5 text-base leading-relaxed text-[var(--muted)]">
+            <p className="mt-2 text-base leading-relaxed text-[var(--muted)]">
               {product.description}
             </p>
           )}
@@ -180,7 +180,7 @@ export default async function ProductDetailPage({
               always the same shape regardless of which optional fields a
               product has, so the 2-col grid never lands on an odd 3rd item
               with an empty gap next to it. */}
-          <dl className="mt-6 grid grid-cols-2 gap-4 border-y border-[var(--border)] py-5 text-sm">
+          <dl className="mt-1 grid grid-cols-2 gap-4 border-y border-[var(--border)] py-5 text-sm">
             <div>
               <dt className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
                 Category

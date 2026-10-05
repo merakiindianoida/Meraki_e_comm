@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { AUDIENCES, CATEGORIES } from "@/lib/catalog";
+import { AUDIENCES } from "@/lib/catalog";
+import { STOREFRONT_CATEGORIES } from "@/lib/storefrontCatalog";
 import ProductCard from "@/components/ProductCard";
 
 // Same reasoning as app/products/[slug]/page.tsx - not personalized, no
@@ -92,7 +93,7 @@ export default async function ProductsPage({
         >
           All
         </Link>
-        {CATEGORIES.map((c) => (
+        {STOREFRONT_CATEGORIES.map((c) => (
           <Link
             key={c}
             href={chipHref({ category, audience, search }, { category: c })}
