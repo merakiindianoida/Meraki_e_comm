@@ -50,7 +50,7 @@ export async function generateMetadata({
       "delhi ncr silver",
     ],
     openGraph: {
-      type: "product",
+      type: "website",
       title,
       description,
       url: canonical,
