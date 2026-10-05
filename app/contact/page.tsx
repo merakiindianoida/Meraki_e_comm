@@ -22,7 +22,7 @@ export default function ContactPage() {
         reach out and we&apos;ll get back to you.
       </p>
 
-      <dl className="mx-auto mt-10 grid max-w-lg gap-6 border-y border-[var(--border)] py-6 text-sm sm:grid-cols-3">
+      <dl className="mx-auto mt-10 grid max-w-lg gap-6 border-y border-[var(--border)] py-6 text-sm sm:grid-cols-2 md:grid-cols-4">
         <div>
           <dt className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Phone / WhatsApp</dt>
           <dd className="mt-2">
@@ -43,9 +43,14 @@ export default function ContactPage() {
           <dt className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Support Hours</dt>
           <dd className="mt-2 text-[var(--ink)]">{BUSINESS.supportHours}</dd>
         </div>
+        <div>
+          <dt className="text-xs uppercase tracking-[0.2em] text-[var(--muted)]">Owner</dt>
+          <dd className="mt-2 text-[var(--ink)]">Sumita Singh</dd>
+          <dd className="text-xs text-[var(--muted)]">MERAKI INDIA</dd>
+        </div>
       </dl>
       <p className="mt-4 text-xs text-[var(--muted)]">
-        {BUSINESS.name} &middot; {BUSINESS.location} &middot; Owner - Sumita Singh (MERAKI INDIA)
+        {BUSINESS.name} &middot; {BUSINESS.location}
       </p>
 
       <ContactForm />

@@ -136,6 +136,9 @@ export default async function ProductDetailPage({
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : null;
 
+  const productUrl = `${SITE_URL}/products/${encodeURIComponent(product.slug)}`;
+  const productImage = product.images[0] ?? `${SITE_URL}/og-default.png`;
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <nav className="text-xs text-[var(--muted)]">
@@ -301,6 +304,68 @@ export default async function ProductDetailPage({
       </div>
 
       <ProductReviews reviews={reviews} averageRating={averageRating} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: product.name,
+            description: product.description
+              ? `${product.description.trim()} 925 silver ${product.category.toLowerCase()}${product.audience ? ` for ${product.audience.toLowerCase()}` : ""}.`
+              : `925 silver ${product.category.toLowerCase()}${product.audience ? ` for ${product.audience.toLowerCase()}` : ""}. Handcrafted in ${BUSINESS.location}.`,
+            image: [productImage],
+            sku: product.id.toString(),
+            brand: {
+              "@type": "Brand",
+              name: BUSINESS.name,
+            },
+            category: product.category,
+            audience: product.audience
+              ? { "@type": "Audience", name: product.audience }
+              : undefined,
+            offers: {
+              "@type": "Offer",
+              url: productUrl,
+              priceCurrency: "INR",
+              price: product.price.toString(),
+              availability: inStock
+                ? "https://schema.org/InStock"
+                : "https://schema.org/OutOfStock",
+              itemCondition: "https://schema.org/NewCondition",
+              seller: {
+                "@type": "JewelryStore",
+                name: BUSINESS.name,
+                address: {
+                  "@type": "PostalAddress",
+                  addressLocality: "Noida",
+                  addressRegion: "Uttar Pradesh",
+                  addressCountry: "IN",
+                },
+              },
+            },
+            ...(averageRating !== null && reviews.length > 0
+              ? {
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: averageRating.toFixed(1),
+                    reviewCount: reviews.length,
+                  },
+                  review: reviews.slice(0, 5).map((r) => ({
+                    "@type": "Review",
+                    reviewRating: {
+                      "@type": "Rating",
+                      ratingValue: r.rating.toString(),
+                    },
+                    author: { "@type": "Person", name: r.customer.name },
+                    reviewBody: r.comment,
+                    datePublished: r.createdAt.toISOString().split("T")[0],
+                  })),
+                }
+              : {}),
+          }),
+        }}
+      />
     </main>
   );
 }

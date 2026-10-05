@@ -9,6 +9,7 @@ import AddToBagButton from "@/components/AddToBagButton";
 import WishlistButton from "@/components/WishlistButton";
 import CategoryCarousel from "@/components/CategoryCarousel";
 import ShoppableVideoFeed from "@/components/ShoppableVideoFeed";
+import { BUSINESS } from "@/lib/siteInfo";
 
 // Same reasoning as the product pages - not personalized, doesn't need a
 // live DB query on every single visit.
@@ -589,6 +590,43 @@ export default async function Home() {
           Write a Review
         </Link>
       </section>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "JewelryStore",
+            name: BUSINESS.name,
+            alternateName: "Meraki India",
+            description: "Handcrafted BIS hallmarked 925 silver jewellery for kids, women, and men. Made with soul in Noida.",
+            url: `https://${BUSINESS.website}`,
+            telephone: BUSINESS.phoneDisplay,
+            email: BUSINESS.email,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: "Noida",
+              addressRegion: "Uttar Pradesh",
+              addressCountry: "IN",
+            },
+            geo: {
+              "@type": "GeoCoordinates",
+              latitude: 28.5355,
+              longitude: 77.391,
+            },
+            openingHoursSpecification: {
+              "@type": "OpeningHoursSpecification",
+              dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+              opens: "10:00",
+              closes: "19:00",
+            },
+            sameAs: [
+              "https://instagram.com/meraki.fine.silver",
+              BUSINESS.whatsappHref,
+            ],
+            priceRange: "₹₹",
+          }),
+        }}
+      />
     </main>
   );
 }
