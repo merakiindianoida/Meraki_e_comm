@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPhonePeWebhookAuth } from "@/lib/phonepe";
-import { markOrderPaid, markOrderCancelled } from "@/lib/orderFulfillment";
+import {
+  markOrderPaid,
+  markOrderCancelled,
+  revalidateStorefrontForOrder,
+} from "@/lib/orderFulfillment";
 
 // PhonePe calls this server-to-server once a payment reaches a terminal
 // state — this, not the customer's browser redirect, is the source of
@@ -45,6 +49,11 @@ export async function POST(request: NextRequest) {
     if (state === "COMPLETED") {
       const transactionId = body.payload?.paymentDetails?.[0]?.transactionId ?? null;
       await markOrderPaid(order.id, transactionId);
+      // Always refresh the cached storefront here, even when the order page's
+      // fallback check already marked the order paid (markOrderPaid is then a
+      // no-op). revalidatePath is not allowed during page render, so this
+      // route handler is the one place it reliably works for this flow.
+      await revalidateStorefrontForOrder(order.id);
     } else if (state === "FAILED") {
       await markOrderCancelled(order.id);
     }

@@ -8,6 +8,10 @@ import { sendOrderConfirmationEmail, sendStockShortfallAlert } from "@/lib/email
 // redirects back before the webhook has landed) — the "mark paid, decrement
 // stock" step only ever needs to exist in one place, since it's the one
 // piece of this whole flow that actually moves money and inventory.
+//
+// NOTE: this function must NOT call revalidatePath. It runs during render
+// when called from app/orders/[id]/page.tsx, where Next.js forbids it. The
+// webhook calls revalidateStorefrontForOrder() below after this instead.
 export async function markOrderPaid(orderId: string, transactionId: string | null) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
@@ -48,20 +52,6 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
     });
   });
 
-  // Stock just changed for these products - the cached product pages
-  // (see app/products/[slug]/page.tsx) shouldn't keep showing "in stock"
-  // for up to a minute after something actually sells out.
-  // Wrapped so a revalidate failure can never stop the emails below.
-  try {
-    for (const item of order.items) {
-      revalidatePath(`/products/${item.product.slug}`);
-    }
-    revalidatePath("/products");
-    revalidatePath("/");
-  } catch (error) {
-    console.error("revalidatePath failed after markOrderPaid:", error);
-  }
-
   // Emails are awaited (not `void`) on purpose: on Vercel serverless the
   // function can be frozen as soon as the response is sent, which silently
   // killed un-awaited sends. send() in lib/email.ts catches its own errors,
@@ -90,6 +80,28 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
       totalAmount: order.totalAmount.toString(),
       shippingAddress: order.shippingAddress,
     });
+  }
+}
+
+// Refreshes the cached storefront pages (see app/products/[slug]/page.tsx)
+// after an order changes stock. Safe to call from route handlers and server
+// actions, NOT during render. Idempotent, so the webhook can call it even
+// when the order page already marked the order paid.
+export async function revalidateStorefrontForOrder(orderId: string) {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { items: { select: { product: { select: { slug: true } } } } },
+  });
+  if (!order) return;
+
+  try {
+    for (const item of order.items) {
+      revalidatePath(`/products/${item.product.slug}`);
+    }
+    revalidatePath("/products");
+    revalidatePath("/");
+  } catch (error) {
+    console.error("revalidateStorefrontForOrder failed:", error);
   }
 }
 
