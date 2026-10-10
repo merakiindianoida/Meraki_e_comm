@@ -51,14 +51,23 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
   // Stock just changed for these products - the cached product pages
   // (see app/products/[slug]/page.tsx) shouldn't keep showing "in stock"
   // for up to a minute after something actually sells out.
-  for (const item of order.items) {
-    revalidatePath(`/products/${item.product.slug}`);
+  // Wrapped so a revalidate failure can never stop the emails below.
+  try {
+    for (const item of order.items) {
+      revalidatePath(`/products/${item.product.slug}`);
+    }
+    revalidatePath("/products");
+    revalidatePath("/");
+  } catch (error) {
+    console.error("revalidatePath failed after markOrderPaid:", error);
   }
-  revalidatePath("/products");
-  revalidatePath("/");
 
+  // Emails are awaited (not `void`) on purpose: on Vercel serverless the
+  // function can be frozen as soon as the response is sent, which silently
+  // killed un-awaited sends. send() in lib/email.ts catches its own errors,
+  // so awaiting here can never break order processing.
   if (shortfalls.length > 0) {
-    void sendStockShortfallAlert({
+    await sendStockShortfallAlert({
       orderId: order.id,
       customerName: order.guestName,
       customerEmail: order.guestEmail,
@@ -68,7 +77,7 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
   }
 
   if (order.guestEmail) {
-    void sendOrderConfirmationEmail({
+    await sendOrderConfirmationEmail({
       to: order.guestEmail,
       customerName: order.guestName,
       orderId: order.id,
@@ -126,10 +135,14 @@ export async function cancelOrderAndRestoreStock(orderId: string) {
   });
 
   if (order.status === "PAID") {
-    for (const item of order.items) {
-      revalidatePath(`/products/${item.product.slug}`);
+    try {
+      for (const item of order.items) {
+        revalidatePath(`/products/${item.product.slug}`);
+      }
+      revalidatePath("/products");
+      revalidatePath("/");
+    } catch (error) {
+      console.error("revalidatePath failed after cancelOrderAndRestoreStock:", error);
     }
-    revalidatePath("/products");
-    revalidatePath("/");
   }
 }

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/catalog";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "text-amber-600",

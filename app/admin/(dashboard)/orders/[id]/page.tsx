@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/catalog";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import OrderStatusSelect from "@/components/admin/OrderStatusSelect";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminOrderDetailPage({
   params,

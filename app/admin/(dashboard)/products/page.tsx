@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice, stockStatus } from "@/lib/catalog";
 import ProductActiveToggle from "@/components/admin/ProductActiveToggle";
 import DeleteProductButton from "@/components/admin/DeleteProductButton";
-
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 // Unlike the public /products listing, this includes inactive products -
 // the admin needs to see (and re-activate) discontinued pieces too.
 export default async function AdminProductsPage() {

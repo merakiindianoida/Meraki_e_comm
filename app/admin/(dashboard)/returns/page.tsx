@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ReturnStatusSelect from "@/components/admin/ReturnStatusSelect";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminReturnsPage() {
   const returns = await prisma.returnRequest.findMany({
