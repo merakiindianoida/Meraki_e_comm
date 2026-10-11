@@ -1,7 +1,12 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { sendOrderConfirmationEmail, sendStockShortfallAlert } from "@/lib/email";
+import {
+  sendOrderConfirmationEmail,
+  sendOrderStatusEmail,
+  sendStockShortfallAlert,
+} from "@/lib/email";
+import { getPhonePeOrderStatus } from "@/lib/phonepe";
 
 // Shared by both the PhonePe webhook (the real source of truth) and the
 // order-confirmation page's fallback check (for when a customer's browser
@@ -25,7 +30,20 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
 
   const shortfalls: string[] = [];
 
-  await prisma.$transaction(async (tx) => {
+  const didMarkPaid = await prisma.$transaction(async (tx) => {
+    // Claim the pending order before changing inventory. A concurrent
+    // cancellation or payment-failure callback can win, but only one
+    // transition out of PENDING is allowed to move stock or send email.
+    const claimed = await tx.order.updateMany({
+      where: { id: order.id, status: "PENDING" },
+      data: {
+        status: "PAID",
+        phonepeMerchantTransactionId: order.id,
+        phonepeTransactionId: transactionId,
+      },
+    });
+    if (claimed.count === 0) return false;
+
     for (const item of order.items) {
       const result = await tx.product.updateMany({
         where: { id: item.productId, stock: { gte: item.quantity } },
@@ -42,15 +60,10 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
       }
     }
 
-    await tx.order.update({
-      where: { id: order.id },
-      data: {
-        status: "PAID",
-        phonepeMerchantTransactionId: order.id,
-        phonepeTransactionId: transactionId,
-      },
-    });
+    return true;
   });
+
+  if (!didMarkPaid) return;
 
   // Emails are awaited (not `void`) on purpose: on Vercel serverless the
   // function can be frozen as soon as the response is sent, which silently
@@ -105,14 +118,53 @@ export async function revalidateStorefrontForOrder(orderId: string) {
   }
 }
 
-export async function markOrderCancelled(orderId: string) {
-  // Guarded by the same PENDING check inside updateMany's WHERE clause —
-  // if it's already PAID (e.g. the page's fallback check and the webhook
-  // raced and PAID won), a stale FAILED delivery must never cancel it.
-  await prisma.order.updateMany({
+export async function markOrderPaymentFailed(orderId: string) {
+  // A gateway failure only applies while payment is pending. A late failed
+  // callback must never overwrite a successful payment or a customer cancel.
+  const result = await prisma.order.updateMany({
     where: { id: orderId, status: "PENDING" },
-    data: { status: "CANCELLED" },
+    data: { status: "PAYMENT_FAILED" },
   });
+  if (result.count === 0) return;
+
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (order?.guestEmail) {
+    await sendOrderStatusEmail({
+      to: order.guestEmail,
+      customerName: order.guestName,
+      orderId: order.id,
+      status: "PAYMENT_FAILED",
+    });
+  }
+}
+
+// Reconcile pending payment whenever its order page or the customer's
+// order list is opened. PhonePe terminal failure/expiry states are recorded
+// immediately; a still-pending gateway result remains pending until a later
+// webhook or status check supplies a terminal result.
+export async function reconcilePendingPhonePeOrder(orderId: string): Promise<boolean> {
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order || order.status !== "PENDING") {
+    return false;
+  }
+
+  try {
+    const { state, transactionId } = await getPhonePeOrderStatus(order.id);
+    if (state === "COMPLETED") {
+      await markOrderPaid(order.id, transactionId);
+      return true;
+    }
+    if (state === "FAILED" || state === "EXPIRED") {
+      await markOrderPaymentFailed(order.id);
+      return true;
+    }
+  } catch (error) {
+    // If PhonePe is temporarily unreachable, leave the order pending; a
+    // later webhook or order-page visit can retry the check.
+    console.error("PhonePe status check failed:", error);
+  }
+
+  return true;
 }
 
 // Shared by the customer's self-service cancel (app/orders/actions.ts) and
@@ -130,6 +182,12 @@ export async function cancelOrderAndRestoreStock(orderId: string) {
   if (!order || (order.status !== "PENDING" && order.status !== "PAID")) return;
 
   await prisma.$transaction(async (tx) => {
+    const claimed = await tx.order.updateMany({
+      where: { id: orderId, status: order.status },
+      data: { status: "CANCELLED" },
+    });
+    if (claimed.count === 0) return;
+
     if (order.status === "PAID") {
       for (const item of order.items) {
         if (item.stockShortfall) continue;
@@ -140,10 +198,6 @@ export async function cancelOrderAndRestoreStock(orderId: string) {
       }
     }
 
-    await tx.order.update({
-      where: { id: orderId },
-      data: { status: "CANCELLED" },
-    });
   });
 
   if (order.status === "PAID") {

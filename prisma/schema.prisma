@@ -102,6 +102,8 @@ model Order {
   updatedAt       DateTime    @updatedAt
 
   items           OrderItem[]
+
+  @@index([status, createdAt])
 }
 
 model OrderItem {
@@ -124,7 +126,9 @@ model OrderItem {
 
 enum OrderStatus {
   PENDING
+  PAYMENT_FAILED
   PAID
+  PACKED
   SHIPPED
   DELIVERED
   CANCELLED
@@ -154,7 +158,14 @@ enum ReturnStatus {
   REQUESTED
   APPROVED
   REJECTED
+  RECEIVED
+  REFUND_INITIATED
   REFUNDED
+}
+
+enum ReturnType {
+  RETURN
+  EXCHANGE
 }
 
 // Same "tied to the purchased OrderItem" pattern as Review — a return
@@ -166,6 +177,7 @@ model ReturnRequest {
   id          String       @id @default(uuid())
   orderItem   OrderItem    @relation(fields: [orderItemId], references: [id])
   orderItemId String       @unique
+  type        ReturnType   @default(RETURN)
   reason      String
   status      ReturnStatus @default(REQUESTED)
 

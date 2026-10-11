@@ -12,7 +12,12 @@ export default async function AdminDashboardPage() {
       prisma.order.count({ where: { status: "PENDING" } }),
       prisma.returnRequest.count({ where: { status: "REQUESTED" } }),
       // Paid orders with a line that sold out before payment landed - see lib/orderFulfillment.ts.
-      prisma.order.count({ where: { status: "PAID", items: { some: { stockShortfall: true } } } }),
+      prisma.order.count({
+        where: {
+          status: { in: ["PAID", "PACKED", "SHIPPED", "DELIVERED"] },
+          items: { some: { stockShortfall: true } },
+        },
+      }),
     ]);
 
   const lowOrOutOfStock = allActiveProducts.filter(

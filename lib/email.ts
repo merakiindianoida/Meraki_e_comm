@@ -170,6 +170,10 @@ export async function sendContactEmail(params: {
 }
 
 const STATUS_COPY: Partial<Record<OrderStatus, { subject: string; body: string }>> = {
+  PAYMENT_FAILED: {
+    subject: "Payment not completed",
+    body: "We couldn't confirm payment for your order. You can place the order again whenever you're ready.",
+  },
   SHIPPED: {
     subject: "Your order has shipped",
     body: "Your order is on its way and should arrive within 3–10 business days.",
@@ -184,9 +188,8 @@ const STATUS_COPY: Partial<Record<OrderStatus, { subject: string; body: string }
   },
 };
 
-// Only SHIPPED/DELIVERED/CANCELLED get an email — PENDING and PAID aren't
-// meaningful updates the customer needs to be told about separately from
-// the order-confirmation email they already got.
+// Only meaningful order changes get an email — PENDING and PAID aren't
+// separate updates from the checkout and order-confirmation steps.
 export async function sendOrderStatusEmail(params: {
   to: string;
   customerName: string | null;

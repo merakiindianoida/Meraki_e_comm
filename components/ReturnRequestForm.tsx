@@ -4,9 +4,11 @@ import { useState, useActionState } from "react";
 import { requestReturn, type ReturnRequestState } from "@/app/orders/actions";
 
 const STATUS_LABEL: Record<string, string> = {
-  REQUESTED: "Return requested — under review",
-  APPROVED: "Return approved",
-  REJECTED: "Return request rejected",
+  REQUESTED: "Request submitted — under review",
+  APPROVED: "Request approved",
+  REJECTED: "Request rejected",
+  RECEIVED: "Item received by store",
+  REFUND_INITIATED: "Refund initiated",
   REFUNDED: "Refunded",
 };
 
@@ -56,6 +58,17 @@ export default function ReturnRequestForm({
         placeholder="Why are you returning this item?"
         className="w-full border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--ink)] outline-none transition duration-300 focus:border-[var(--accent)]"
       />
+      <label className="block text-xs text-[var(--muted)]">
+        Request type
+        <select
+          name="type"
+          defaultValue="RETURN"
+          className="mt-1 block w-full border border-[var(--border)] bg-white px-2.5 py-2 text-xs text-[var(--ink)]"
+        >
+          <option value="RETURN">Return</option>
+          <option value="EXCHANGE">Exchange</option>
+        </select>
+      </label>
       {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
       <div className="flex items-center gap-3">
         <button

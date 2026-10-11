@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ order: { id: order.id }, redirectUrl }, { status: 201 });
     } catch (phonepeError) {
       console.error("PhonePe order creation failed:", phonepeError);
-      await prisma.order.update({ where: { id: order.id }, data: { status: "CANCELLED" } });
+      await prisma.order.update({ where: { id: order.id }, data: { status: "PAYMENT_FAILED" } });
       throw new OrderError("Couldn't start the payment. Please try again.");
     }
   } catch (error) {

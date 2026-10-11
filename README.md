@@ -34,3 +34,10 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+### Order payment expiry
+
+Pending PhonePe orders are reconciled when a customer opens their order list or an order
+detail. PhonePe `FAILED` and `EXPIRED` results immediately become `PAYMENT_FAILED`; a
+`PENDING` gateway result stays pending until a later webhook or status check returns a final
+state. No scheduled job is needed.

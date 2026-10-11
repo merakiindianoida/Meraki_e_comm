@@ -3,8 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/catalog";
-import { getPhonePeOrderStatus } from "@/lib/phonepe";
-import { markOrderPaid, markOrderCancelled } from "@/lib/orderFulfillment";
+import { reconcilePendingPhonePeOrder } from "@/lib/orderFulfillment";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import OrderStatusBadge from "@/components/OrderStatusBadge";
 import ReviewForm from "@/components/ReviewForm";
@@ -48,32 +47,18 @@ export default async function OrderConfirmationPage({
   // of truth, see app/api/phonepe/webhook) is a separate, unordered
   // delivery that can arrive a beat later. Rather than show "pending"
   // limbo on first landing, ask PhonePe directly once here and finalize
-  // inline if it already knows the outcome — markOrderPaid/Cancelled are
+  // inline if it already knows the outcome — markOrderPaid/PaymentFailed are
   // the same idempotent functions the webhook itself calls, so whichever
   // of the two gets there first is a no-op for the other.
   if (order.status === "PENDING") {
-    try {
-      const { state, transactionId } = await getPhonePeOrderStatus(order.id);
-      if (state === "COMPLETED") {
-        await markOrderPaid(order.id, transactionId);
-      } else if (state === "FAILED") {
-        await markOrderCancelled(order.id);
-      }
-      if (state !== "PENDING") {
-        order = await prisma.order.findUnique({
-          where: { id },
-          include: {
-            items: { include: { product: true, returnRequest: true, review: true } },
-            customer: true,
-          },
-        });
-      }
-    } catch (error) {
-      // PhonePe's status API being briefly unreachable shouldn't break
-      // this page — it just falls back to showing "pending" and letting
-      // the webhook (or the poller below, on a refresh) catch up.
-      console.error("PhonePe status check failed:", error);
-    }
+    await reconcilePendingPhonePeOrder(order.id);
+    order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: { include: { product: true, returnRequest: true, review: true } },
+        customer: true,
+      },
+    });
   }
 
   if (!order) {
@@ -83,13 +68,9 @@ export default async function OrderConfirmationPage({
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <div className="border-b border-[var(--border)] pb-8 text-center">
-        {/* PENDING here means "waiting on PhonePe" specifically — the
-            fallback check above already tried to resolve it once, so
-            still being PENDING means either the customer bailed out of
-            PhonePe's checkout, or its webhook genuinely hasn't landed yet.
-            The poller below quietly refreshes this page so the moment
-            either resolves it, this message updates without the customer
-            having to do anything. */}
+        {/* PENDING here means PhonePe has not returned a terminal payment
+            result yet. The poller refreshes briefly while its webhook and
+            status endpoint catch up. */}
         {order.status === "PENDING" ? (
           <>
             <p className="text-xs uppercase tracking-[0.2em] text-[var(--accent)]">
@@ -99,9 +80,9 @@ export default async function OrderConfirmationPage({
               Almost there, {order.guestName ?? "friend"}.
             </h1>
             <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-[var(--muted)]">
-              We&apos;re confirming your payment with PhonePe — this page
-              will update automatically. If you closed the payment window
-              before finishing, you can safely place the order again.
+              We&apos;re confirming your payment with PhonePe. This status
+              will update as soon as PhonePe reports a completed or failed
+              payment.
             </p>
             <OrderStatusPoller />
           </>

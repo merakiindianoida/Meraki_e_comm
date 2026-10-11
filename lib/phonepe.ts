@@ -73,7 +73,7 @@ export async function createPhonePeOrder(params: {
     body: JSON.stringify({
       merchantOrderId: params.merchantOrderId,
       amount: params.amountPaise,
-      expireAfter: 1200, // 20 minutes to complete payment before the order expires
+      expireAfter: 1200, // Let PhonePe expire an abandoned checkout; terminal expiry is recorded as Payment Failed.
       paymentFlow: {
         type: "PG_CHECKOUT",
         merchantUrls: { redirectUrl: params.redirectUrl },
@@ -89,7 +89,7 @@ export async function createPhonePeOrder(params: {
   return { phonepeOrderId: data.orderId, redirectUrl: data.redirectUrl };
 }
 
-export type PhonePeOrderState = "PENDING" | "COMPLETED" | "FAILED";
+export type PhonePeOrderState = "PENDING" | "COMPLETED" | "FAILED" | "EXPIRED";
 
 export async function getPhonePeOrderStatus(
   merchantOrderId: string

@@ -6,7 +6,9 @@ export const revalidate = 0;
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "text-amber-600",
+  PAYMENT_FAILED: "text-red-600",
   PAID: "text-[var(--accent)]",
+  PACKED: "text-violet-600",
   SHIPPED: "text-[var(--accent)]",
   DELIVERED: "text-green-600",
   CANCELLED: "text-red-600",
@@ -62,7 +64,7 @@ export default async function AdminOrdersPage() {
                   <span
                     className={`text-xs uppercase tracking-[0.1em] ${STATUS_COLORS[order.status] ?? "text-[var(--muted)]"}`}
                   >
-                    {order.status}
+                    {order.status === "PAYMENT_FAILED" ? "Payment Failed" : order.status}
                   </span>
                   {order.items.length > 0 && order.status !== "CANCELLED" && (
                     <span className="ml-2 bg-red-600 px-1.5 py-0.5 text-[10px] uppercase tracking-[0.1em] text-white">

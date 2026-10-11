@@ -8,6 +8,7 @@ import OrderStatusBadge from "@/components/OrderStatusBadge";
 import ReviewForm from "@/components/ReviewForm";
 import ReturnRequestForm from "@/components/ReturnRequestForm";
 import CancelOrderButton from "@/components/CancelOrderButton";
+import { reconcilePendingPhonePeOrder } from "@/lib/orderFulfillment";
 
 // Requires a signed-in Clerk user - proxy.ts already redirects anonymous
 // visitors here before this ever renders, but the check is repeated here
@@ -23,13 +24,26 @@ export default async function MyOrdersPage() {
 
   // No Customer row yet just means this account has never completed
   // checkout - an empty state, not an error.
-  const orders = customer
+  let orders = customer
     ? await prisma.order.findMany({
         where: { customerId: customer.id },
         orderBy: { createdAt: "desc" },
         include: { items: { include: { product: true, returnRequest: true, review: true } } },
       })
     : [];
+
+  const checkedPendingOrders = await Promise.all(
+    orders
+      .filter((order) => order.status === "PENDING")
+      .map((order) => reconcilePendingPhonePeOrder(order.id))
+  );
+  if (checkedPendingOrders.some(Boolean) && customer) {
+    orders = await prisma.order.findMany({
+      where: { customerId: customer.id },
+      orderBy: { createdAt: "desc" },
+      include: { items: { include: { product: true, returnRequest: true, review: true } } },
+    });
+  }
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">

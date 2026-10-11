@@ -17,10 +17,27 @@ export async function updateReturnStatus(id: string, status: string) {
     throw new Error("Invalid return status");
   }
 
-  await prisma.returnRequest.update({
+  const current = await prisma.returnRequest.findUnique({
     where: { id },
-    data: { status: status as ReturnStatus },
+    include: { orderItem: { select: { orderId: true } } },
   });
+  if (!current) throw new Error("Return request not found");
+
+  const allowed: Record<string, readonly string[]> = {
+    REQUESTED: ["APPROVED", "REJECTED"],
+    APPROVED: ["REJECTED", "RECEIVED"],
+    REJECTED: [],
+    RECEIVED: current.type === "RETURN" ? ["REFUND_INITIATED"] : [],
+    REFUND_INITIATED: current.type === "RETURN" ? ["REFUNDED"] : [],
+    REFUNDED: [],
+  };
+  if (status !== current.status && !allowed[current.status]?.includes(status)) {
+    throw new Error("That return status change is not allowed.");
+  }
+
+  await prisma.returnRequest.update({ where: { id }, data: { status: status as ReturnStatus } });
 
   revalidatePath("/admin/returns");
+  revalidatePath("/orders");
+  revalidatePath(`/orders/${current.orderItem.orderId}`);
 }

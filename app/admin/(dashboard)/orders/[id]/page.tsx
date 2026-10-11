@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/catalog";
+import { reconcilePendingPhonePeOrder } from "@/lib/orderFulfillment";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import OrderStatusSelect from "@/components/admin/OrderStatusSelect";
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ export default async function AdminOrderDetailPage({
 }) {
   const { id } = await params;
 
-  const order = await prisma.order.findUnique({
+  let order = await prisma.order.findUnique({
     where: { id },
     include: { items: { include: { product: true } } },
   });
@@ -22,6 +23,16 @@ export default async function AdminOrderDetailPage({
   if (!order) {
     notFound();
   }
+
+  if (order.status === "PENDING") {
+    await reconcilePendingPhonePeOrder(order.id);
+    order = await prisma.order.findUnique({
+      where: { id },
+      include: { items: { include: { product: true } } },
+    });
+  }
+
+  if (!order) notFound();
 
   return (
     <div>

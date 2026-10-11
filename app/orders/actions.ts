@@ -58,7 +58,10 @@ export async function requestReturn(
     return { error: "Please sign in." };
   }
 
-  const parsed = returnRequestSchema.safeParse({ reason: formData.get("reason") });
+  const parsed = returnRequestSchema.safeParse({
+    type: formData.get("type"),
+    reason: formData.get("reason"),
+  });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid request" };
   }
@@ -87,7 +90,7 @@ export async function requestReturn(
   }
 
   await prisma.returnRequest.create({
-    data: { orderItemId, reason: parsed.data.reason },
+    data: { orderItemId, type: parsed.data.type, reason: parsed.data.reason },
   });
 
   revalidatePath("/orders");

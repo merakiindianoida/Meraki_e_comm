@@ -13,11 +13,15 @@ import {
 
 const VALID_STATUSES = new Set<string>(Object.values(OrderStatus));
 
-// Once an order has left the building, it can't go back to an unshipped
-// state or be cancelled. After delivery the customer uses the return flow
-// (see app/orders/actions.ts's requestReturn) for any refund.
-const SHIPPED_LOCKED = new Set<string>(["SHIPPED", "DELIVERED"]);
-const ALLOWED_AFTER_SHIPPED = new Set<string>(["SHIPPED", "DELIVERED"]);
+const ALLOWED_TRANSITIONS: Record<string, ReadonlySet<string>> = {
+  PENDING: new Set(["PAID", "PAYMENT_FAILED", "CANCELLED"]),
+  PAYMENT_FAILED: new Set(),
+  PAID: new Set(["PACKED", "CANCELLED"]),
+  PACKED: new Set(["SHIPPED"]),
+  SHIPPED: new Set(["DELIVERED"]),
+  DELIVERED: new Set(),
+  CANCELLED: new Set(),
+};
 
 export async function updateOrderStatus(id: string, status: string) {
   await requireAdmin();
@@ -35,13 +39,8 @@ export async function updateOrderStatus(id: string, status: string) {
     throw new Error("Order not found");
   }
 
-  // Server-side lock: a shipped/delivered order can only move between
-  // SHIPPED and DELIVERED. Cancelling, or moving back to PENDING/PAID,
-  // is rejected here no matter what the dropdown shows.
-  if (SHIPPED_LOCKED.has(current.status) && !ALLOWED_AFTER_SHIPPED.has(status)) {
-    throw new Error(
-      "Shipped orders can't be cancelled or moved back. After delivery, the customer can request a return."
-    );
+  if (status !== current.status && !ALLOWED_TRANSITIONS[current.status]?.has(status)) {
+    throw new Error("That order status change is not allowed.");
   }
 
   // PENDING -> PAID and (PENDING or PAID) -> CANCELLED both move real
@@ -63,13 +62,16 @@ export async function updateOrderStatus(id: string, status: string) {
   } else if (status === "CANCELLED") {
     // Any other starting status can't be cancelled from here.
     throw new Error("This order can't be cancelled from its current status.");
-  } else {
+  } else if (status !== current.status) {
     // Keeps the original delivery date if it's re-saved as DELIVERED; cleared if moved back.
     const deliveredAt =
       status === "DELIVERED" ? (current.status === "DELIVERED" ? current.deliveredAt : new Date()) : null;
     await prisma.order.update({
       where: { id },
-      data: { status: status as OrderStatus, deliveredAt },
+      data: {
+        status: status as OrderStatus,
+        deliveredAt,
+      },
     });
   }
 

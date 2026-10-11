@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyPhonePeWebhookAuth } from "@/lib/phonepe";
 import {
   markOrderPaid,
-  markOrderCancelled,
+  markOrderPaymentFailed,
   revalidateStorefrontForOrder,
 } from "@/lib/orderFulfillment";
 
@@ -54,11 +54,10 @@ export async function POST(request: NextRequest) {
       // no-op). revalidatePath is not allowed during page render, so this
       // route handler is the one place it reliably works for this flow.
       await revalidateStorefrontForOrder(order.id);
-    } else if (state === "FAILED") {
-      await markOrderCancelled(order.id);
+    } else if (state === "FAILED" || state === "EXPIRED") {
+      await markOrderPaymentFailed(order.id);
     }
-    // Any other state (still PENDING on PhonePe's side) — nothing to do
-    // until a later delivery reports a terminal state.
+    // A PENDING state stays pending until a later terminal update.
   } catch (error) {
     console.error("Error processing PhonePe webhook:", error);
     // Still acknowledge — a non-2xx here just makes PhonePe retry a

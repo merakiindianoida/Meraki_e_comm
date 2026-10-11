@@ -60,7 +60,12 @@ export default async function AdminReturnsPage() {
                   })}
                 </td>
                 <td className="px-4 py-3">
-                  <ReturnStatusSelect returnId={ret.id} status={ret.status} />
+                  <div className="space-y-1">
+                    <p className="text-[10px] uppercase tracking-[0.1em] text-[var(--muted)]">
+                      {ret.type.toLowerCase()}
+                    </p>
+                    <ReturnStatusSelect returnId={ret.id} status={ret.status} type={ret.type} />
+                  </div>
                 </td>
               </tr>
             ))}
