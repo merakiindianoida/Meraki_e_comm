@@ -125,7 +125,7 @@ export default async function OrderConfirmationPage({
               </span>
             </div>
             {/* Per purchased item, only once it's actually arrived. */}
-            {order.status === "DELIVERED" && (
+            {(order.status === "DELIVERED" || (order.status === "REFUNDED" && order.deliveredAt)) && (
               <div className="flex w-full items-center gap-4 pl-20">
                 <ReviewForm orderItemId={item.id} existingReview={item.review} />
                 {item.returnRequest || isWithinReturnWindow(order.deliveredAt) ? (
@@ -151,7 +151,7 @@ export default async function OrderConfirmationPage({
         </span>
       </div>
 
-      {order.status === "DELIVERED" && order.deliveredAt && isWithinReturnWindow(order.deliveredAt) && (
+      {(order.status === "DELIVERED" || order.status === "REFUNDED") && order.deliveredAt && isWithinReturnWindow(order.deliveredAt) && (
         <p className="mt-3 text-xs text-[var(--muted)]">
           Returns can be requested until{" "}
           {returnDeadline(order.deliveredAt).toLocaleDateString("en-IN", {

@@ -26,7 +26,8 @@ export default function PrivacyPolicyPage() {
           </li>
           <li>
             <strong className="text-[var(--ink)]">Order details:</strong> phone number, delivery
-            address and the items you buy.
+            address and the items you buy. If you choose WhatsApp updates at checkout, we also
+            store that preference for the order.
           </li>
           <li>
             <strong className="text-[var(--ink)]">Messages:</strong> anything you send us through the
@@ -47,6 +48,7 @@ export default function PrivacyPolicyPage() {
         <ul className="list-disc space-y-1 pl-5">
           <li>to process, deliver and support your orders</li>
           <li>to send order confirmations and delivery updates</li>
+          <li>to send non-promotional WhatsApp order updates only when you opt in at checkout</li>
           <li>to handle cancellations, returns and refunds</li>
           <li>to reply to your questions</li>
           <li>to send our newsletter, only if you have subscribed</li>
@@ -62,6 +64,7 @@ export default function PrivacyPolicyPage() {
           <li>Clerk, for account sign-in</li>
           <li>PhonePe, for processing payments</li>
           <li>Resend, for sending order emails</li>
+          <li>Meta / WhatsApp, to send order updates only for orders where you opted in</li>
           <li>our hosting and database providers, for storing order information securely</li>
         </ul>
         <p>We may also disclose information if required to by law.</p>
@@ -83,6 +86,9 @@ export default function PrivacyPolicyPage() {
             {BUSINESS.email}
           </a>
           . We may need to keep order records where the law requires it.
+        </p>
+        <p className="mt-3">
+          To stop WhatsApp order updates, reply STOP to a message or contact us using the email above.
         </p>
       </PolicySection>
 

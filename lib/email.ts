@@ -190,6 +190,10 @@ const STATUS_COPY: Partial<Record<OrderStatus, { subject: string; body: string }
     subject: "Your order has been cancelled",
     body: `Your order has been cancelled. If payment was captured, any applicable refund will be handled under our <a href="${APP_URL}/refund-policy" style="color:#8a6a2f;">Refund &amp; Returns Policy</a>. If this cancellation wasn't expected, please reach out to us.`,
   },
+  REFUNDED: {
+    subject: "Your refund has been completed",
+    body: "Your refund has been marked as completed. Please allow your payment provider time to show the amount in your account.",
+  },
 };
 
 // Meaningful order changes get an email; PENDING and PAID aren't separate

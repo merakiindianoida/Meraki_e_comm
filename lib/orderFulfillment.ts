@@ -7,6 +7,7 @@ import {
   sendStockShortfallAlert,
 } from "@/lib/email";
 import { getPhonePeOrderStatus } from "@/lib/phonepe";
+import { sendOrderWhatsAppUpdate } from "@/lib/whatsapp";
 
 // Shared by both the PhonePe webhook (the real source of truth) and the
 // order-confirmation page's fallback check (for when a customer's browser
@@ -94,6 +95,13 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
       shippingAddress: order.shippingAddress,
     });
   }
+  await sendOrderWhatsAppUpdate({
+    to: order.guestPhone,
+    optedIn: order.whatsappOptIn,
+    customerName: order.guestName,
+    orderId: order.id,
+    status: "PAID",
+  });
 }
 
 // Refreshes the cached storefront pages (see app/products/[slug]/page.tsx)
@@ -131,6 +139,15 @@ export async function markOrderPaymentFailed(orderId: string) {
   if (order?.guestEmail) {
     await sendOrderStatusEmail({
       to: order.guestEmail,
+      customerName: order.guestName,
+      orderId: order.id,
+      status: "PAYMENT_FAILED",
+    });
+  }
+  if (order) {
+    await sendOrderWhatsAppUpdate({
+      to: order.guestPhone,
+      optedIn: order.whatsappOptIn,
       customerName: order.guestName,
       orderId: order.id,
       status: "PAYMENT_FAILED",
@@ -184,7 +201,10 @@ export async function cancelOrderAndRestoreStock(orderId: string): Promise<boole
   const didCancel = await prisma.$transaction(async (tx) => {
     const claimed = await tx.order.updateMany({
       where: { id: orderId, status: order.status },
-      data: { status: "CANCELLED" },
+      data: {
+        status: "CANCELLED",
+        refundStatus: order.status === "PAID" ? "PENDING" : "NOT_REQUIRED",
+      },
     });
     if (claimed.count === 0) return false;
 
@@ -226,6 +246,13 @@ export async function cancelOrderAndRestoreStock(orderId: string): Promise<boole
       status: "CANCELLED",
     });
   }
+  await sendOrderWhatsAppUpdate({
+    to: order.guestPhone,
+    optedIn: order.whatsappOptIn,
+    customerName: order.guestName,
+    orderId: order.id,
+    status: "CANCELLED",
+  });
 
   return true;
 }

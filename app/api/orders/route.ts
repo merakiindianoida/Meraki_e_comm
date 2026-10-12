@@ -7,6 +7,7 @@ import { MAX_SAVED_ADDRESSES, formatAddress } from "@/lib/address";
 import { SERVICE_AREA_LABEL, isServiceablePincode } from "@/lib/serviceArea";
 import { RATE_LIMIT_MESSAGE, RATE_RULES, checkRateLimit } from "@/lib/rateLimit";
 import { upsertCustomerByClerk } from "@/lib/customer";
+import { markOrderPaymentFailed } from "@/lib/orderFulfillment";
 
 class OrderError extends Error {}
 
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { items, addressId, newAddress } = parsed.data;
+  const { items, addressId, newAddress, whatsappUpdatesOptIn } = parsed.data;
 
   const user = await currentUser();
   const email = user?.primaryEmailAddress?.emailAddress ?? null;
@@ -112,6 +113,7 @@ export async function POST(request: NextRequest) {
           guestName: name,
           guestEmail: email,
           guestPhone: phone,
+          whatsappOptIn: whatsappUpdatesOptIn,
           shippingAddress,
           totalAmount,
           items: {
@@ -135,7 +137,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ order: { id: order.id }, redirectUrl }, { status: 201 });
     } catch (phonepeError) {
       console.error("PhonePe order creation failed:", phonepeError);
-      await prisma.order.update({ where: { id: order.id }, data: { status: "PAYMENT_FAILED" } });
+      await markOrderPaymentFailed(order.id);
       throw new OrderError("Couldn't start the payment. Please try again.");
     }
   } catch (error) {

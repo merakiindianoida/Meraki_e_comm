@@ -4,6 +4,9 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/adminAuth";
 import { ReturnStatus } from "@/app/generated/prisma/client";
+import { sendOrderStatusEmail } from "@/lib/email";
+import { sendOrderWhatsAppUpdate } from "@/lib/whatsapp";
+import { isForwardOrderTransition } from "@/lib/orderStatus";
 
 const VALID_STATUSES = new Set<string>(Object.values(ReturnStatus));
 
@@ -19,7 +22,14 @@ export async function updateReturnStatus(id: string, status: string) {
 
   const current = await prisma.returnRequest.findUnique({
     where: { id },
-    include: { orderItem: { select: { orderId: true } } },
+    include: {
+      orderItem: {
+        select: {
+          orderId: true,
+          order: { select: { status: true, guestEmail: true, guestName: true, guestPhone: true, whatsappOptIn: true } },
+        },
+      },
+    },
   });
   if (!current) throw new Error("Return request not found");
 
@@ -35,9 +45,38 @@ export async function updateReturnStatus(id: string, status: string) {
     throw new Error("That return status change is not allowed.");
   }
 
-  await prisma.returnRequest.update({ where: { id }, data: { status: status as ReturnStatus } });
+  await prisma.$transaction(async (tx) => {
+    await tx.returnRequest.update({ where: { id }, data: { status: status as ReturnStatus } });
+    if (status === "REFUNDED") {
+      await tx.order.update({
+        where: { id: current.orderItem.orderId },
+        data: { status: "REFUNDED", refundStatus: "REFUNDED" },
+      });
+    }
+  });
+
+  const orderMovedForward = status === "REFUNDED" && isForwardOrderTransition(current.orderItem.order.status, "REFUNDED");
+  if (orderMovedForward && current.orderItem.order.guestEmail) {
+    await sendOrderStatusEmail({
+      to: current.orderItem.order.guestEmail,
+      customerName: current.orderItem.order.guestName,
+      orderId: current.orderItem.orderId,
+      status: "REFUNDED",
+    });
+  }
+  if (orderMovedForward) {
+    await sendOrderWhatsAppUpdate({
+      to: current.orderItem.order.guestPhone,
+      optedIn: current.orderItem.order.whatsappOptIn,
+      customerName: current.orderItem.order.guestName,
+      orderId: current.orderItem.orderId,
+      status: "REFUNDED",
+    });
+  }
 
   revalidatePath("/admin/returns");
   revalidatePath("/orders");
   revalidatePath(`/orders/${current.orderItem.orderId}`);
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin");
 }

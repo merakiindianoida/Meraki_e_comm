@@ -108,7 +108,7 @@ export default async function MyOrdersPage() {
                         make sense once it's actually arrived - no point
                         offering either while the order is still pending or
                         in transit. */}
-                    {order.status === "DELIVERED" && (
+                    {(order.status === "DELIVERED" || (order.status === "REFUNDED" && order.deliveredAt)) && (
                       <div className="flex w-full items-center gap-4 sm:w-auto">
                         <ReviewForm orderItemId={item.id} existingReview={item.review} />
                         <ReturnRequestForm

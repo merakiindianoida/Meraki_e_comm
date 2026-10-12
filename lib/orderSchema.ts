@@ -29,6 +29,7 @@ export const createOrderSchema = z
     items: z.array(orderItemSchema).min(1, "Your bag is empty").max(20),
     addressId: z.string().uuid().optional(),
     newAddress: newAddressSchema.optional(),
+    whatsappUpdatesOptIn: z.boolean().optional().default(false),
   })
   .refine((data) => Boolean(data.addressId) || Boolean(data.newAddress), {
     message: "Choose a delivery address or enter one",

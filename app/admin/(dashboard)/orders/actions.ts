@@ -11,6 +11,8 @@ import {
   revalidateStorefrontForOrder,
 } from "@/lib/orderFulfillment";
 import { canAdminTransitionOrderStatus } from "@/lib/orderStatus";
+import { isForwardOrderTransition } from "@/lib/orderStatus";
+import { sendOrderWhatsAppUpdate } from "@/lib/whatsapp";
 
 const VALID_STATUSES = new Set<string>(Object.values(OrderStatus));
 
@@ -32,6 +34,19 @@ export async function updateOrderStatus(id: string, status: string) {
 
   if (!canAdminTransitionOrderStatus(current.status, status)) {
     throw new Error("That order status change is not allowed.");
+  }
+
+  if (status === "REFUNDED") {
+    if (current.status !== "CANCELLED" || current.refundStatus !== "PENDING") {
+      throw new Error("Only a cancelled order with a pending refund can be marked refunded.");
+    }
+    const updated = await prisma.order.updateMany({
+      where: { id, status: "CANCELLED", refundStatus: "PENDING" },
+      data: { status: "REFUNDED", refundStatus: "REFUNDED" },
+    });
+    if (updated.count === 0) {
+      throw new Error("The order changed before it could be marked refunded. Refresh and try again.");
+    }
   }
 
   // PENDING -> PAID and (PENDING or PAID) -> CANCELLED both move real
@@ -56,7 +71,7 @@ export async function updateOrderStatus(id: string, status: string) {
   } else if (status === "CANCELLED") {
     // Any other starting status can't be cancelled from here.
     throw new Error("This order can't be cancelled from its current status.");
-  } else if (status !== current.status) {
+  } else if (status !== current.status && status !== "REFUNDED") {
     // Keeps the original delivery date if it's re-saved as DELIVERED; cleared if moved back.
     const deliveredAt =
       status === "DELIVERED" ? (current.status === "DELIVERED" ? current.deliveredAt : new Date()) : null;
@@ -84,9 +99,19 @@ export async function updateOrderStatus(id: string, status: string) {
   // own errors, so a failed email never breaks the admin's status update.
   // Only send when the status actually changed, so re-saving the same
   // status doesn't email the customer again.
-  if (order.guestEmail && order.status !== current.status && order.status !== "CANCELLED") {
+  const movedForward = isForwardOrderTransition(current.status, order.status);
+  if (order.guestEmail && movedForward && order.status !== "CANCELLED") {
     await sendOrderStatusEmail({
       to: order.guestEmail,
+      customerName: order.guestName,
+      orderId: order.id,
+      status: order.status,
+    });
+  }
+  if (movedForward && order.status !== "CANCELLED") {
+    await sendOrderWhatsAppUpdate({
+      to: order.guestPhone,
+      optedIn: order.whatsappOptIn,
       customerName: order.guestName,
       orderId: order.id,
       status: order.status,
@@ -95,4 +120,5 @@ export async function updateOrderStatus(id: string, status: string) {
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
+  revalidatePath("/admin");
 }

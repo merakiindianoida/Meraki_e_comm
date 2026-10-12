@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canAdminTransitionOrderStatus,
   canCustomerCancelOrder,
+  isForwardOrderTransition,
 } from "@/lib/orderStatus";
 
 describe("order status transitions", () => {
@@ -16,6 +17,21 @@ describe("order status transitions", () => {
 
   it("does not let admins reverse a shipment", () => {
     expect(canAdminTransitionOrderStatus("SHIPPED", "PACKED")).toBe(false);
+  });
+
+  it("lets admins mark a cancelled order refunded", () => {
+    expect(canAdminTransitionOrderStatus("CANCELLED", "REFUNDED")).toBe(true);
+  });
+
+  it("does not allow a completed refund to move back", () => {
+    expect(canAdminTransitionOrderStatus("REFUNDED", "CANCELLED")).toBe(false);
+  });
+
+  it("sends notifications only for forward stage changes", () => {
+    expect(isForwardOrderTransition("PAID", "PACKED")).toBe(true);
+    expect(isForwardOrderTransition("CANCELLED", "REFUNDED")).toBe(true);
+    expect(isForwardOrderTransition("PACKED", "PAID")).toBe(false);
+    expect(isForwardOrderTransition("SHIPPED", "SHIPPED")).toBe(false);
   });
 });
 

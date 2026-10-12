@@ -79,7 +79,10 @@ export async function requestReturn(
   if (!orderItem || orderItem.order.customer?.clerkId !== userId) {
     return { error: "Order item not found." };
   }
-  if (orderItem.order.status !== "DELIVERED") {
+  if (
+    (orderItem.order.status !== "DELIVERED" && orderItem.order.status !== "REFUNDED") ||
+    !orderItem.order.deliveredAt
+  ) {
     return { error: "Returns can only be requested for delivered orders." };
   }
   if (orderItem.returnRequest) {
@@ -130,7 +133,10 @@ export async function submitReview(
   if (!orderItem || orderItem.order.customer?.clerkId !== userId) {
     return { error: "Order item not found." };
   }
-  if (orderItem.order.status !== "DELIVERED") {
+  if (
+    (orderItem.order.status !== "DELIVERED" && orderItem.order.status !== "REFUNDED") ||
+    !orderItem.order.deliveredAt
+  ) {
     return { error: "You can only review items from delivered orders." };
   }
   if (orderItem.review) {

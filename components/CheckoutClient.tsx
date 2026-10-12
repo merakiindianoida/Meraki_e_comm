@@ -75,6 +75,7 @@ export default function CheckoutClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items: items.map((item) => ({ productId: item.id, quantity: item.quantity })),
+          whatsappUpdatesOptIn: form.get("whatsappUpdatesOptIn") === "on",
           ...(useSavedAddress
             ? { addressId: selectedAddressId }
             : {
@@ -184,6 +185,17 @@ export default function CheckoutClient({
         )}
 
         {addingNew && <AddressFields showLabel={false} />}
+
+        <label className="flex cursor-pointer items-start gap-3 border border-[var(--border)] p-3 text-xs leading-5 text-[var(--muted)]">
+          <input
+            type="checkbox"
+            name="whatsappUpdatesOptIn"
+            className="mt-1 accent-[var(--accent)]"
+          />
+          <span>
+            Send me order and delivery updates on WhatsApp. I can opt out at any time. This is optional and does not include promotions.
+          </span>
+        </label>
 
         {error && (
           <p role="alert" className="text-sm text-red-600">

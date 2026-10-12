@@ -84,8 +84,10 @@ model Order {
   guestName       String?
   guestEmail      String?
   guestPhone      String?
+  whatsappOptIn   Boolean     @default(false)
 
   status          OrderStatus @default(PENDING)
+  refundStatus    OrderRefundStatus @default(NOT_REQUIRED)
   totalAmount     Decimal     @db.Decimal(10, 2)
   shippingAddress String
 
@@ -136,6 +138,13 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+  REFUNDED
+}
+
+enum OrderRefundStatus {
+  NOT_REQUIRED
+  PENDING
+  REFUNDED
 }
 
 // One review per purchased order item — tying it to OrderItem rather than

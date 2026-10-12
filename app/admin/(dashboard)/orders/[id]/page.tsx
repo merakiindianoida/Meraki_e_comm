@@ -44,7 +44,11 @@ export default async function AdminOrderDetailPage({
         <h1 className="font-serif text-3xl text-[var(--ink)]">
           Order #{order.id.slice(0, 8).toUpperCase()}
         </h1>
-        <OrderStatusSelect orderId={order.id} status={order.status} />
+        <OrderStatusSelect
+          orderId={order.id}
+          status={order.status}
+          refundStatus={order.refundStatus}
+        />
       </div>
 
       {order.status !== "CANCELLED" && order.items.some((item) => item.stockShortfall) && (

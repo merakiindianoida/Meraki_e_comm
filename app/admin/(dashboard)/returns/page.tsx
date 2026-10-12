@@ -4,8 +4,17 @@ import ReturnStatusSelect from "@/components/admin/ReturnStatusSelect";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function AdminReturnsPage() {
+export default async function AdminReturnsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const rawStatus = Array.isArray(params.status) ? params.status[0] : params.status;
+  const validStatuses = ["REQUESTED", "APPROVED", "REJECTED", "RECEIVED", "REFUND_INITIATED", "REFUNDED"] as const;
+  const status = validStatuses.find((value) => value === rawStatus);
   const returns = await prisma.returnRequest.findMany({
+    where: status ? { status } : undefined,
     orderBy: { createdAt: "desc" },
     include: {
       orderItem: {
@@ -19,7 +28,32 @@ export default async function AdminReturnsPage() {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl text-[var(--ink)]">Returns</h1>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.16em] text-[var(--muted)]">Return management</p>
+          <h1 className="mt-1 font-serif text-3xl text-[var(--ink)]">
+            {status === "REQUESTED" ? "New return requests" : status ? status.replaceAll("_", " ") : "Returns & exchanges"}
+          </h1>
+          <p className="mt-2 text-sm text-[var(--muted)]">{returns.length} {returns.length === 1 ? "request" : "requests"} in this view.</p>
+        </div>
+        <Link href="/admin" className="text-sm text-[var(--accent)] hover:underline">← Dashboard</Link>
+      </div>
+
+      <nav aria-label="Filter returns" className="mt-6 flex gap-2 overflow-x-auto pb-2">
+        {[
+          { label: "All", href: "/admin/returns", key: "all" },
+          { label: "New requests", href: "/admin/returns?status=REQUESTED", key: "REQUESTED" },
+          { label: "Approved", href: "/admin/returns?status=APPROVED", key: "APPROVED" },
+          { label: "Received", href: "/admin/returns?status=RECEIVED", key: "RECEIVED" },
+          { label: "Refund in progress", href: "/admin/returns?status=REFUND_INITIATED", key: "REFUND_INITIATED" },
+          { label: "Refunded", href: "/admin/returns?status=REFUNDED", key: "REFUNDED" },
+        ].map((filter) => (
+          <Link key={filter.key} href={filter.href} aria-current={(status ?? "all") === filter.key ? "page" : undefined}
+            className={`shrink-0 border px-3 py-2 text-xs transition ${(status ?? "all") === filter.key ? "border-[var(--ink)] bg-[var(--ink)] text-white" : "border-[var(--border-strong)] bg-white text-[var(--ink)] hover:border-[var(--accent)]"}`}>
+            {filter.label}
+          </Link>
+        ))}
+      </nav>
 
       <div className="mt-6 overflow-x-auto border border-[var(--border-strong)] bg-white">
         <table className="w-full min-w-[760px] text-sm">

@@ -11,6 +11,7 @@ const STATUS_STYLES: Record<OrderStatus, string> = {
   SHIPPED: "border-indigo-200 bg-indigo-50 text-indigo-700",
   DELIVERED: "border-emerald-200 bg-emerald-50 text-emerald-700",
   CANCELLED: "border-red-200 bg-red-50 text-red-700",
+  REFUNDED: "border-emerald-200 bg-emerald-50 text-emerald-700",
 };
 
 export default function OrderStatusBadge({ status }: { status: OrderStatus }) {
