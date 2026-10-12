@@ -1,18 +1,71 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-function VideoTile({ src }: { src: string }) {
+function videoPoster(src: string) {
+  return src
+    .replace("/video/upload/", "/video/upload/so_0,w_480,q_auto/")
+    .replace(/\.(mp4|webm)(\?.*)?$/i, ".jpg");
+}
+
+function VideoTile({
+  src,
+  active,
+  onVisibilityChange,
+}: {
+  src: string;
+  active: boolean;
+  onVisibilityChange: (src: string, ratio: number) => void;
+}) {
+  const tileRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
+  const [hasEnteredViewport, setHasEnteredViewport] = useState(false);
+
+  useEffect(() => {
+    const tile = tileRef.current;
+    if (!tile) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setHasEnteredViewport(true);
+        onVisibilityChange(src, entry.isIntersecting ? entry.intersectionRatio : 0);
+      },
+      { threshold: [0, 0.2, 0.4, 0.5, 0.75, 1] }
+    );
+    observer.observe(tile);
+
+    return () => observer.disconnect();
+  }, [onVisibilityChange, src]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (!active) {
+      video.pause();
+      return;
+    }
+
+    // Don't assign a source until the tile is selected. Once attached, keep
+    // it so scrolling back to this reel doesn't have to restart the request.
+    if (video.getAttribute("src") !== src) video.src = src;
+
+    // Muted inline playback is permitted by mobile browsers. Catch a
+    // browser-level rejection so autoplay never causes an unhandled error.
+    void video.play().catch(() => {});
+  }, [active, src]);
 
   return (
-    <div className="relative aspect-[9/16] w-64 shrink-0 snap-center overflow-hidden rounded-lg border border-[var(--border-strong)] bg-black sm:w-72">
+    <div
+      ref={tileRef}
+      className="relative aspect-[9/16] w-64 shrink-0 snap-center overflow-hidden rounded-lg border border-[var(--border-strong)] bg-black sm:w-72"
+    >
       <video
         ref={videoRef}
-        src={src}
+        poster={hasEnteredViewport ? videoPoster(src) : undefined}
         muted={muted}
-        autoPlay
+        preload="none"
         loop
         playsInline
         className="h-full w-full object-cover"
@@ -50,6 +103,25 @@ function VideoTile({ src }: { src: string }) {
 // be bought, just watched. Renders nothing if there are no clips yet,
 // rather than a "coming soon" placeholder.
 export default function ShoppableVideoFeed({ videos }: { videos: string[] }) {
+  const [activeSrc, setActiveSrc] = useState<string | null>(null);
+  const visibilityBySrc = useRef(new Map<string, number>());
+
+  const updateVisibility = useCallback((src: string, ratio: number) => {
+    if (ratio > 0) visibilityBySrc.current.set(src, ratio);
+    else visibilityBySrc.current.delete(src);
+
+    let mostVisibleSrc: string | null = null;
+    let highestRatio = 0.5;
+    for (const [candidate, candidateRatio] of visibilityBySrc.current) {
+      if (candidateRatio > highestRatio) {
+        mostVisibleSrc = candidate;
+        highestRatio = candidateRatio;
+      }
+    }
+
+    setActiveSrc((current) => (current === mostVisibleSrc ? current : mostVisibleSrc));
+  }, []);
+
   if (videos.length === 0) return null;
 
   return (
@@ -58,7 +130,12 @@ export default function ShoppableVideoFeed({ videos }: { videos: string[] }) {
         <h2 className="font-serif text-3xl text-[var(--ink)]">As Seen on Instagram</h2>
         <div className="mt-6 flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {videos.map((src) => (
-            <VideoTile key={src} src={src} />
+            <VideoTile
+              key={src}
+              src={src}
+              active={activeSrc === src}
+              onVisibilityChange={updateVisibility}
+            />
           ))}
         </div>
       </div>
