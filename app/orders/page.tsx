@@ -9,6 +9,7 @@ import ReviewForm from "@/components/ReviewForm";
 import ReturnRequestForm from "@/components/ReturnRequestForm";
 import CancelOrderButton from "@/components/CancelOrderButton";
 import { reconcilePendingPhonePeOrder } from "@/lib/orderFulfillment";
+import { canCustomerCancelOrder } from "@/lib/orderStatus";
 
 // Requires a signed-in Clerk user - proxy.ts already redirects anonymous
 // visitors here before this ever renders, but the check is repeated here
@@ -130,7 +131,7 @@ export default async function MyOrdersPage() {
                 {/* Cancellation is order-wide (you can't part-cancel an
                     order once it's a single checkout), unlike rating/
                     returns above which are per item. */}
-                {(order.status === "PENDING" || order.status === "PAID") && (
+                {canCustomerCancelOrder(order.status, order.firstPackedAt) && (
                   <CancelOrderButton orderId={order.id} />
                 )}
               </div>

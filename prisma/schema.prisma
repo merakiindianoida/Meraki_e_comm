@@ -98,6 +98,10 @@ model Order {
   // Set when admin marks the order DELIVERED - starts the return window (lib/returnWindow.ts).
   deliveredAt     DateTime?
 
+  // First time this order reached PACKED. Kept if an admin corrects its
+  // visible status back to PAID, so customer cancellation remains locked.
+  firstPackedAt   DateTime?
+
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 

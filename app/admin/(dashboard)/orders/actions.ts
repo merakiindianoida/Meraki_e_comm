@@ -10,18 +10,9 @@ import {
   cancelOrderAndRestoreStock,
   revalidateStorefrontForOrder,
 } from "@/lib/orderFulfillment";
+import { canAdminTransitionOrderStatus } from "@/lib/orderStatus";
 
 const VALID_STATUSES = new Set<string>(Object.values(OrderStatus));
-
-const ALLOWED_TRANSITIONS: Record<string, ReadonlySet<string>> = {
-  PENDING: new Set(["PAID", "PAYMENT_FAILED", "CANCELLED"]),
-  PAYMENT_FAILED: new Set(),
-  PAID: new Set(["PACKED", "CANCELLED"]),
-  PACKED: new Set(["SHIPPED"]),
-  SHIPPED: new Set(["DELIVERED"]),
-  DELIVERED: new Set(),
-  CANCELLED: new Set(),
-};
 
 export async function updateOrderStatus(id: string, status: string) {
   await requireAdmin();
@@ -39,7 +30,7 @@ export async function updateOrderStatus(id: string, status: string) {
     throw new Error("Order not found");
   }
 
-  if (status !== current.status && !ALLOWED_TRANSITIONS[current.status]?.has(status)) {
+  if (!canAdminTransitionOrderStatus(current.status, status)) {
     throw new Error("That order status change is not allowed.");
   }
 
@@ -58,7 +49,10 @@ export async function updateOrderStatus(id: string, status: string) {
     status === "CANCELLED" &&
     (current.status === "PENDING" || current.status === "PAID")
   ) {
-    await cancelOrderAndRestoreStock(id);
+    const didCancel = await cancelOrderAndRestoreStock(id);
+    if (!didCancel) {
+      throw new Error("The order changed before it could be cancelled. Refresh and try again.");
+    }
   } else if (status === "CANCELLED") {
     // Any other starting status can't be cancelled from here.
     throw new Error("This order can't be cancelled from its current status.");
@@ -66,11 +60,15 @@ export async function updateOrderStatus(id: string, status: string) {
     // Keeps the original delivery date if it's re-saved as DELIVERED; cleared if moved back.
     const deliveredAt =
       status === "DELIVERED" ? (current.status === "DELIVERED" ? current.deliveredAt : new Date()) : null;
+    const firstPackedAt =
+      current.firstPackedAt ??
+      (current.status === "PACKED" || status === "PACKED" ? new Date() : null);
     await prisma.order.update({
       where: { id },
       data: {
         status: status as OrderStatus,
         deliveredAt,
+        firstPackedAt,
       },
     });
   }
@@ -86,7 +84,7 @@ export async function updateOrderStatus(id: string, status: string) {
   // own errors, so a failed email never breaks the admin's status update.
   // Only send when the status actually changed, so re-saving the same
   // status doesn't email the customer again.
-  if (order.guestEmail && order.status !== current.status) {
+  if (order.guestEmail && order.status !== current.status && order.status !== "CANCELLED") {
     await sendOrderStatusEmail({
       to: order.guestEmail,
       customerName: order.guestName,

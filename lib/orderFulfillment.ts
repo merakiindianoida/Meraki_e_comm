@@ -173,20 +173,20 @@ export async function reconcilePendingPhonePeOrder(orderId: string): Promise<boo
 // CANCELLED on a PAID order would silently leave that stock decremented
 // forever, permanently understating real inventory for something that
 // never actually shipped.
-export async function cancelOrderAndRestoreStock(orderId: string) {
+export async function cancelOrderAndRestoreStock(orderId: string): Promise<boolean> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: { items: { include: { product: true } } },
   });
 
-  if (!order || (order.status !== "PENDING" && order.status !== "PAID")) return;
+  if (!order || (order.status !== "PENDING" && order.status !== "PAID")) return false;
 
-  await prisma.$transaction(async (tx) => {
+  const didCancel = await prisma.$transaction(async (tx) => {
     const claimed = await tx.order.updateMany({
       where: { id: orderId, status: order.status },
       data: { status: "CANCELLED" },
     });
-    if (claimed.count === 0) return;
+    if (claimed.count === 0) return false;
 
     if (order.status === "PAID") {
       for (const item of order.items) {
@@ -198,7 +198,10 @@ export async function cancelOrderAndRestoreStock(orderId: string) {
       }
     }
 
+    return true;
   });
+
+  if (!didCancel) return false;
 
   if (order.status === "PAID") {
     try {
@@ -211,4 +214,18 @@ export async function cancelOrderAndRestoreStock(orderId: string) {
       console.error("revalidatePath failed after cancelOrderAndRestoreStock:", error);
     }
   }
+
+  // Send once from this shared cancellation path so customer and admin
+  // cancellations receive the same notification. The caller's status
+  // email path skips CANCELLED to avoid sending a duplicate.
+  if (order.guestEmail) {
+    await sendOrderStatusEmail({
+      to: order.guestEmail,
+      customerName: order.guestName,
+      orderId: order.id,
+      status: "CANCELLED",
+    });
+  }
+
+  return true;
 }

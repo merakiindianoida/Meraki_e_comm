@@ -11,6 +11,7 @@ import ReturnRequestForm from "@/components/ReturnRequestForm";
 import CancelOrderButton from "@/components/CancelOrderButton";
 import OrderStatusPoller from "@/components/OrderStatusPoller";
 import { isWithinReturnWindow, returnDeadline } from "@/lib/returnWindow";
+import { canCustomerCancelOrder } from "@/lib/orderStatus";
 
 // Checkout now always requires a signed-in Clerk user (see
 // POST /api/orders), so every order has a real owner - this page checks
@@ -172,7 +173,7 @@ export default async function OrderConfirmationPage({
         </p>
       </div>
 
-      {(order.status === "PENDING" || order.status === "PAID") && (
+      {canCustomerCancelOrder(order.status, order.firstPackedAt) && (
         <div className="mt-8 flex justify-center border-t border-[var(--border)] pt-6">
           <CancelOrderButton orderId={order.id} />
         </div>

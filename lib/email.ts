@@ -174,6 +174,10 @@ const STATUS_COPY: Partial<Record<OrderStatus, { subject: string; body: string }
     subject: "Payment not completed",
     body: "We couldn't confirm payment for your order. You can place the order again whenever you're ready.",
   },
+  PACKED: {
+    subject: "Your order has been packed",
+    body: "Your order has been packed and is being prepared for dispatch. It can no longer be cancelled through the site. We’ll email you again when it ships.",
+  },
   SHIPPED: {
     subject: "Your order has shipped",
     body: "Your order is on its way and should arrive within 3–10 business days.",
@@ -184,12 +188,12 @@ const STATUS_COPY: Partial<Record<OrderStatus, { subject: string; body: string }
   },
   CANCELLED: {
     subject: "Your order has been cancelled",
-    body: "Your order has been cancelled. If this wasn't expected, please reach out to us.",
+    body: `Your order has been cancelled. If payment was captured, any applicable refund will be handled under our <a href="${APP_URL}/refund-policy" style="color:#8a6a2f;">Refund &amp; Returns Policy</a>. If this cancellation wasn't expected, please reach out to us.`,
   },
 };
 
-// Only meaningful order changes get an email — PENDING and PAID aren't
-// separate updates from the checkout and order-confirmation steps.
+// Meaningful order changes get an email; PENDING and PAID aren't separate
+// updates from the checkout and order-confirmation steps.
 export async function sendOrderStatusEmail(params: {
   to: string;
   customerName: string | null;

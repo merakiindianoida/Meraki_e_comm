@@ -9,6 +9,7 @@ import { getOrCreateCustomer } from "@/lib/customer";
 import { cancelOrderAndRestoreStock } from "@/lib/orderFulfillment";
 import { isWithinReturnWindow } from "@/lib/returnWindow";
 import { POLICY } from "@/lib/siteInfo";
+import { canCustomerCancelOrder } from "@/lib/orderStatus";
 
 export type CancelOrderState = { error?: string } | undefined;
 export type ReturnRequestState = { error?: string } | undefined;
@@ -18,8 +19,6 @@ export type ReviewState = { error?: string } | undefined;
 // shipped - once it's SHIPPED or DELIVERED, that's a return, not a
 // cancellation (see the ReturnRequest flow instead). CANCELLED is already
 // terminal, and there's nothing to cancel from there either.
-const CANCELLABLE_STATUSES = new Set(["PENDING", "PAID"]);
-
 export async function cancelOrder(orderId: string): Promise<CancelOrderState> {
   const { userId } = await auth();
   if (!userId) {
@@ -37,11 +36,14 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderState> {
     return { error: "Order not found." };
   }
 
-  if (!CANCELLABLE_STATUSES.has(order.status)) {
+  if (!canCustomerCancelOrder(order.status, order.firstPackedAt)) {
     return { error: "This order can no longer be cancelled." };
   }
 
-  await cancelOrderAndRestoreStock(orderId);
+  const didCancel = await cancelOrderAndRestoreStock(orderId);
+  if (!didCancel) {
+    return { error: "This order can no longer be cancelled." };
+  }
 
   revalidatePath("/orders");
   revalidatePath(`/orders/${orderId}`);

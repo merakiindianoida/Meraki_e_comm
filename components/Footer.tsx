@@ -145,7 +145,20 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/40 sm:px-6">
-        &copy; {new Date().getFullYear()} {BUSINESS.name}, {BUSINESS.location}. All rights reserved.
+        <p>
+          &copy; {new Date().getFullYear()} {BUSINESS.name}, {BUSINESS.location}. All rights reserved.
+        </p>
+        <p className="mt-1 text-[10px] font-light tracking-wide text-white/30">
+          Created by{" "}
+          <a
+            href="https://www.instagram.com/the.marketinggeek/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition hover:text-white/60"
+          >
+            The Marketing Geek (TMG)
+          </a>
+        </p>
       </div>
     </footer>
   );

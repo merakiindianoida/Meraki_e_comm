@@ -61,6 +61,13 @@ export default function TermsPage() {
           error is found, or if we suspect fraud. If we cancel an order you have paid for, you
           will receive a full refund as set out in our Refund &amp; Returns Policy.
         </p>
+        <p>
+          You may request cancellation through My Orders while an order is Pending or Paid and
+          before it is marked Packed. Once packing has begun and the order is marked Packed,
+          customer cancellation through the site is no longer available. Please contact us if you
+          need assistance. This process is subject to applicable consumer-protection law and does
+          not limit any rights that cannot legally be excluded.
+        </p>
       </PolicySection>
 
       <PolicySection title="Your account">

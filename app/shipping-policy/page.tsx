@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import PolicyPage, { PolicySection } from "@/components/PolicyPage";
 import { BUSINESS, POLICY } from "@/lib/siteInfo";
 import { SERVICE_AREA_LABEL } from "@/lib/serviceArea";
@@ -26,6 +27,15 @@ export default function ShippingPolicyPage() {
           usually takes <strong className="text-[var(--ink)]">{POLICY.deliveryDays}</strong> from the
           date your payment is confirmed. Sundays and public holidays are not counted as
           business days.
+        </p>
+        <p>
+          Your order status moves from Paid to Packed while we prepare it, then to Shipped and
+          Delivered. Customer cancellation through <strong className="text-[var(--ink)]">My
+          Orders</strong> is available before the order is marked Packed. See our{" "}
+          <Link href="/refund-policy" className="underline-hover text-[var(--accent)]">
+            Refund &amp; Returns Policy
+          </Link>{" "}
+          for cancellation and return details, subject to applicable law.
         </p>
         <p>
           Occasionally delays can happen because of weather, local restrictions or high order

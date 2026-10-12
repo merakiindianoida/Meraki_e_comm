@@ -12,10 +12,15 @@ export default function RefundPolicyPage() {
     <PolicyPage title="Refund & Returns Policy" current="/refund-policy">
       <PolicySection title="Cancelling an order">
         <p>
-          You can cancel an order free of charge any time before it ships. Go to{" "}
+          You can request cancellation through{" "}
           <strong className="text-[var(--ink)]">My Orders</strong>, open the order and select{" "}
-          <strong className="text-[var(--ink)]">Cancel Order</strong>. Once an order has shipped it
-          can no longer be cancelled, but you can still request a return after delivery.
+          <strong className="text-[var(--ink)]">Cancel Order</strong> while its status is Pending
+          or Paid and packing has not begun. Once an order is marked{" "}
+          <strong className="text-[var(--ink)]">Packed</strong>, customer cancellation through the
+          site is no longer available, even if dispatch has not happened yet. If you need help with
+          an order at that stage, contact us promptly. This process is subject to applicable
+          consumer-protection law and does not affect your eligible return or refund rights after
+          delivery under this policy.
         </p>
       </PolicySection>
 
