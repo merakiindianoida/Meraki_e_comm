@@ -1,4 +1,3 @@
-// Delhi NCR PIN ranges we deliver to - enforced when an order is placed (app/api/orders/route.ts).
 const SERVICEABLE_PIN_RANGES: ReadonlyArray<readonly [number, number]> = [
   [110001, 110099], // Delhi
   [201301, 201318], // Noida & Greater Noida

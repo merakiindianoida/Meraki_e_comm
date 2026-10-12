@@ -1,15 +1,7 @@
-// Dev/demo catalog data - run via `npm run db:seed` (or automatically after
-// `prisma migrate dev`, since it's wired up in prisma.config.ts). Uses
-// upsert-by-slug so it's safe to re-run without creating duplicates.
-// Not meant for production seeding; the client will manage the real catalog
-// through the admin panel once that's built.
 import "dotenv/config";
 import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-// Standalone script, so it needs its own client instance rather than the
-// shared one in lib/prisma.ts (that one assumes a long-lived Next.js
-// process and hangs onto a global for hot-reload - irrelevant here).
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 

@@ -8,9 +8,6 @@ import "./globals.css";
 
 const SITE_URL = `https://${BUSINESS.website}`;
 
-// Jost (body/UI) + DM Mono (prices, SKUs, tracked labels) + Playfair
-// Display (headings) - replaces the earlier Geist pairing to match the
-// client's typography spec.
 const jostSans = Jost({
   variable: "--font-jost",
   subsets: ["latin"],
@@ -126,9 +123,7 @@ export default function RootLayout({
       >
         <body className="min-h-full flex flex-col">
           <Header />
-          {/* Each page owns its own <main> — keeps exactly one main landmark
-              per page instead of nesting one here around another in every
-              page.tsx. */}
+          
           <div className="flex-1">{children}</div>
           <Footer />
         </body>

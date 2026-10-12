@@ -13,12 +13,6 @@ import OrderStatusPoller from "@/components/OrderStatusPoller";
 import { isWithinReturnWindow, returnDeadline } from "@/lib/returnWindow";
 import { canCustomerCancelOrder } from "@/lib/orderStatus";
 
-// Checkout now always requires a signed-in Clerk user (see
-// POST /api/orders), so every order has a real owner - this page checks
-// that the signed-in visitor actually IS that owner rather than trusting
-// the UUID alone as the access control. A 404 rather than a 403 on
-// mismatch, so the response doesn't confirm an order with that id exists
-// for someone else.
 export default async function OrderConfirmationPage({
   params,
 }: {
@@ -43,14 +37,6 @@ export default async function OrderConfirmationPage({
     notFound();
   }
 
-  // The customer's browser redirects back here the moment PhonePe's
-  // checkout page finishes — but PhonePe's own webhook (the actual source
-  // of truth, see app/api/phonepe/webhook) is a separate, unordered
-  // delivery that can arrive a beat later. Rather than show "pending"
-  // limbo on first landing, ask PhonePe directly once here and finalize
-  // inline if it already knows the outcome — markOrderPaid/PaymentFailed are
-  // the same idempotent functions the webhook itself calls, so whichever
-  // of the two gets there first is a no-op for the other.
   if (order.status === "PENDING") {
     await reconcilePendingPhonePeOrder(order.id);
     order = await prisma.order.findUnique({
@@ -69,9 +55,7 @@ export default async function OrderConfirmationPage({
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <div className="border-b border-[var(--border)] pb-8 text-center">
-        {/* PENDING here means PhonePe has not returned a terminal payment
-            result yet. The poller refreshes briefly while its webhook and
-            status endpoint catch up. */}
+        
         {order.status === "PENDING" ? (
           <>
             <p className="text-xs uppercase tracking-[0.2em] text-[var(--accent)]">
@@ -124,7 +108,6 @@ export default async function OrderConfirmationPage({
                 {formatPrice(parseFloat(item.priceAtSale.toString()) * item.quantity)}
               </span>
             </div>
-            {/* Per purchased item, only once it's actually arrived. */}
             {(order.status === "DELIVERED" || (order.status === "REFUNDED" && order.deliveredAt)) && (
               <div className="flex w-full items-center gap-4 pl-20">
                 <ReviewForm orderItemId={item.id} existingReview={item.review} />

@@ -1,6 +1,3 @@
-// Shared slim-box field markup for an address - used by AddressForm (the
-// account/addresses page) and CheckoutClient's "use a new address" section,
-// so both stay visually and structurally identical.
 export type AddressFieldDefaults = {
   label?: string | null;
   fullName?: string;

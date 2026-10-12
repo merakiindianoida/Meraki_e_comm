@@ -1,16 +1,8 @@
 import { z } from "zod";
 
-// Shared between the address form (client-side validation feedback) and
-// the create/update Server Actions in app/account/addresses/actions.ts -
-// same division of responsibility as lib/orderSchema.ts and
-// lib/productSchema.ts.
 export const addressFormSchema = z.object({
   label: z.string().trim().max(40).optional(),
   fullName: z.string().trim().min(1, "Name is required").max(120),
-  // Indian mobile numbers: 10 digits starting 6-9, optional +91 prefix -
-  // this is a delivery contact number, not a general phone field. Spaces
-  // and hyphens are stripped before checking, so "+91 98765 43210" and
-  // "9876543210" both validate the same way.
   phone: z
     .string()
     .trim()

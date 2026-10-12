@@ -5,10 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { getSavedAddresses } from "@/lib/customer";
 import BuyNowCheckout from "@/components/BuyNowCheckout";
 
-// "Buy Now" express checkout for a single product - bypasses the bag
-// entirely. Reuses the same CheckoutClient (via BuyNowCheckout) as the
-// bag-based /checkout, just with a single, locally-held line item instead
-// of reading from the cart store.
 export default async function ProductCheckoutPage({
   params,
   searchParams,
@@ -30,8 +26,6 @@ export default async function ProductCheckoutPage({
     notFound();
   }
 
-  // Clamp whatever arrives in the URL to a sane range — it's user-editable,
-  // so it could be missing, non-numeric, zero, or larger than actual stock.
   const requestedQty = Number(qty);
   const initialQuantity = Number.isInteger(requestedQty)
     ? Math.min(Math.max(requestedQty, 1), product.stock)

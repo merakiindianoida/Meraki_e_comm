@@ -7,12 +7,6 @@ import {
   revalidateStorefrontForOrder,
 } from "@/lib/orderFulfillment";
 
-// PhonePe calls this server-to-server once a payment reaches a terminal
-// state — this, not the customer's browser redirect, is the source of
-// truth for whether an order actually got paid (a redirect can be closed,
-// spoofed, or never arrive at all). See lib/orderFulfillment.ts for the
-// actual "mark paid, decrement stock" logic, shared with the order page's
-// own fallback check in case this webhook is slow to arrive.
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
   if (!verifyPhonePeWebhookAuth(authHeader)) {
@@ -35,8 +29,6 @@ export async function POST(request: NextRequest) {
   const merchantOrderId = body.payload?.merchantOrderId;
   const state = body.payload?.state;
   if (!merchantOrderId || !state) {
-    // Malformed payload — acknowledge with 2xx anyway so PhonePe doesn't
-    // retry something that will never parse correctly.
     return NextResponse.json({ ok: true });
   }
 
@@ -49,20 +41,12 @@ export async function POST(request: NextRequest) {
     if (state === "COMPLETED") {
       const transactionId = body.payload?.paymentDetails?.[0]?.transactionId ?? null;
       await markOrderPaid(order.id, transactionId);
-      // Always refresh the cached storefront here, even when the order page's
-      // fallback check already marked the order paid (markOrderPaid is then a
-      // no-op). revalidatePath is not allowed during page render, so this
-      // route handler is the one place it reliably works for this flow.
       await revalidateStorefrontForOrder(order.id);
     } else if (state === "FAILED" || state === "EXPIRED") {
       await markOrderPaymentFailed(order.id);
     }
-    // A PENDING state stays pending until a later terminal update.
   } catch (error) {
     console.error("Error processing PhonePe webhook:", error);
-    // Still acknowledge — a non-2xx here just makes PhonePe retry a
-    // delivery that will hit the same error again. The log line above is
-    // what actually needs a human to see it.
   }
 
   return NextResponse.json({ ok: true });

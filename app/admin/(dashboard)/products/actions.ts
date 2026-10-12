@@ -8,8 +8,6 @@ import { productFormSchema, slugify } from "@/lib/productSchema";
 
 export type ProductFormState = { error?: string } | undefined;
 
-// Shared between create and update - pulls the same shape out of a
-// <form>'s FormData regardless of which action consumes it.
 function parseFormData(formData: FormData) {
   const imagesRaw = formData.get("images");
   const images =
@@ -40,9 +38,6 @@ function parseFormData(formData: FormData) {
   };
 }
 
-// Loops rather than trusting the first guess - "fine-box-chain" might
-// already exist from the seed data, so this walks -2, -3, ... until it
-// finds one that's free.
 async function uniqueSlug(base: string, excludeId?: string): Promise<string> {
   let slug = base || "product";
   let suffix = 2;
@@ -157,12 +152,6 @@ export async function toggleProductActive(id: string, isActive: boolean) {
 
 export type DeleteProductState = { error?: string } | undefined;
 
-// A real delete, not just deactivate — but only when it's actually safe:
-// Prisma throws on the foreign-key constraint if any OrderItem still
-// references this product (no onDelete: Cascade on that relation, on
-// purpose — an order's line items should never silently disappear because
-// someone deleted the product later). Deactivating stays the right move
-// for anything with order history; this is for the rest.
 export async function deleteProduct(id: string): Promise<DeleteProductState> {
   await requireAdmin();
 

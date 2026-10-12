@@ -19,7 +19,7 @@ export default function NewsletterForm() {
 
   return (
     <form action={formAction} className="mt-2 max-w-xs">
-      {/* Honeypot - same pattern as ContactForm, invisible to a real visitor */}
+      
       <div className="absolute left-[-9999px]" aria-hidden="true">
         <label htmlFor="newsletter-company">Company</label>
         <input

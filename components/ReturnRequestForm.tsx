@@ -12,9 +12,6 @@ const STATUS_LABEL: Record<string, string> = {
   REFUNDED: "Refunded",
 };
 
-// Per order item, not per order - a return is always against one specific
-// purchased product (see ReturnRequest.orderItemId in schema.prisma), so
-// this renders once per line item rather than once per order.
 export default function ReturnRequestForm({
   orderItemId,
   existingStatus,

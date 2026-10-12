@@ -10,32 +10,18 @@ import {
 import { getPhonePeOrderStatus } from "@/lib/phonepe";
 import { sendOrderWhatsAppUpdate } from "@/lib/whatsapp";
 
-// Shared by both the PhonePe webhook (the real source of truth) and the
-// order-confirmation page's fallback check (for when a customer's browser
-// redirects back before the webhook has landed) — the "mark paid, decrement
-// stock" step only ever needs to exist in one place, since it's the one
-// piece of this whole flow that actually moves money and inventory.
-//
-// NOTE: this function must NOT call revalidatePath. It runs during render
-// when called from app/orders/[id]/page.tsx, where Next.js forbids it. The
-// webhook calls revalidateStorefrontForOrder() below after this instead.
 export async function markOrderPaid(orderId: string, transactionId: string | null) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: { items: { include: { product: true } } },
   });
 
-  // Already handled by whichever caller got here first (webhook vs. the
-  // page's own check racing each other) — never double-decrement stock or
-  // double-send the confirmation email.
   if (!order || order.status !== "PENDING") return;
 
   const shortfalls: string[] = [];
 
+  // The conditional claim prevents concurrent callbacks from deducting stock twice.
   const didMarkPaid = await prisma.$transaction(async (tx) => {
-    // Claim the pending order before changing inventory. A concurrent
-    // cancellation or payment-failure callback can win, but only one
-    // transition out of PENDING is allowed to move stock or send email.
     const claimed = await tx.order.updateMany({
       where: { id: order.id, status: "PENDING" },
       data: {
@@ -52,10 +38,8 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
         data: { stock: { decrement: item.quantity } },
       });
       if (result.count === 0) {
-        // Flagged per line so admin sees it, and so a later cancel doesn't restore stock never taken.
         await tx.orderItem.update({ where: { id: item.id }, data: { stockShortfall: true } });
         shortfalls.push(item.product.name);
-        // Payment already went through, so throwing can't undo it - a human sorts it out from admin.
         console.error(
           `SOLD OUT AFTER PAYMENT: order ${order.id}, product ${item.productId} — customer paid but stock ran out. Needs manual follow-up.`
         );
@@ -67,10 +51,6 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
 
   if (!didMarkPaid) return;
 
-  // Emails are awaited (not `void`) on purpose: on Vercel serverless the
-  // function can be frozen as soon as the response is sent, which silently
-  // killed un-awaited sends. send() in lib/email.ts catches its own errors,
-  // so awaiting here can never break order processing.
   if (shortfalls.length > 0) {
     await sendStockShortfallAlert({
       orderId: order.id,
@@ -105,10 +85,6 @@ export async function markOrderPaid(orderId: string, transactionId: string | nul
   });
 }
 
-// Refreshes the cached storefront pages (see app/products/[slug]/page.tsx)
-// after an order changes stock. Safe to call from route handlers and server
-// actions, NOT during render. Idempotent, so the webhook can call it even
-// when the order page already marked the order paid.
 export async function revalidateStorefrontForOrder(orderId: string) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
@@ -128,8 +104,6 @@ export async function revalidateStorefrontForOrder(orderId: string) {
 }
 
 export async function markOrderPaymentFailed(orderId: string) {
-  // A gateway failure only applies while payment is pending. A late failed
-  // callback must never overwrite a successful payment or a customer cancel.
   const result = await prisma.order.updateMany({
     where: { id: orderId, status: "PENDING" },
     data: { status: "PAYMENT_FAILED" },
@@ -161,10 +135,6 @@ export async function markOrderPaymentFailed(orderId: string) {
   }
 }
 
-// Reconcile pending payment whenever its order page or the customer's
-// order list is opened. PhonePe terminal failure/expiry states are recorded
-// immediately; a still-pending gateway result remains pending until a later
-// webhook or status check supplies a terminal result.
 export async function reconcilePendingPhonePeOrder(orderId: string): Promise<boolean> {
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order || order.status !== "PENDING") {
@@ -182,20 +152,12 @@ export async function reconcilePendingPhonePeOrder(orderId: string): Promise<boo
       return true;
     }
   } catch (error) {
-    // If PhonePe is temporarily unreachable, leave the order pending; a
-    // later webhook or order-page visit can retry the check.
     console.error("PhonePe status check failed:", error);
   }
 
   return true;
 }
 
-// Shared by the customer's self-service cancel (app/orders/actions.ts) and
-// the admin order-status dropdown - same "restore stock only if it was ever
-// decremented" rule as markOrderPaid, just in reverse. A raw status flip to
-// CANCELLED on a PAID order would silently leave that stock decremented
-// forever, permanently understating real inventory for something that
-// never actually shipped.
 export async function cancelOrderAndRestoreStock(orderId: string): Promise<boolean> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
@@ -241,9 +203,6 @@ export async function cancelOrderAndRestoreStock(orderId: string): Promise<boole
     }
   }
 
-  // Send once from this shared cancellation path so customer and admin
-  // cancellations receive the same notification. The caller's status
-  // email path skips CANCELLED to avoid sending a duplicate.
   if (order.guestEmail) {
     await sendOrderStatusEmail({
       to: order.guestEmail,

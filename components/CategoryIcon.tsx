@@ -1,10 +1,3 @@
-// Hand-drawn line icons for the 8 real categories - distinct per category,
-// each built from a few path segments (outline + a small filled "gem/bead"
-// accent) rather than one flat uniform-weight outline. This is a permanent
-// nav treatment, not a "photo pending" placeholder: unlike PlaceholderImage
-// (which stands in for a missing product photo and should eventually be
-// replaced), a "Shop by Category" icon nav is a legitimate design choice
-// on its own, so it lives in its own component rather than reusing that one.
 type Segment = { d: string; filled?: boolean };
 
 const ICONS: Record<string, Segment[]> = {

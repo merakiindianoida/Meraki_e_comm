@@ -2,12 +2,6 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
-// Client-side only cart - same reasoning as lib/useWishlist.ts: no Clerk
-// auth yet, so there's no customer to attach a server-side cart to.
-// Backed by localStorage + a module-level store via useSyncExternalStore.
-// `maxQuantity` is a soft UI limit only (stock at the time the item was
-// added) - the real check happens server-side in POST /api/orders, which
-// re-reads current stock from the DB and never trusts anything from here.
 export type CartItem = {
   id: string;
   slug: string;
@@ -44,7 +38,6 @@ function persist() {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch {
-    // Private browsing / storage disabled - cart just won't survive a reload.
   }
   listeners.forEach((listener) => listener());
 }
@@ -65,10 +58,6 @@ function getServerSnapshot(): CartItem[] {
   return EMPTY_ITEMS;
 }
 
-// Adding an item already in the bag bumps its quantity instead of
-// duplicating the row - this is what makes clicking "Add to Bag" again on
-// a product you already have in your bag feel right rather than creating
-// two lines for the same design.
 function addToCart(item: Omit<CartItem, "quantity">, quantity = 1) {
   hydrate();
   const existing = items.find((i) => i.id === item.id);

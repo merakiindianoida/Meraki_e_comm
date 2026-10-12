@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   description: "Get in touch with Meraki for custom orders and enquiries.",
 };
 
-// Direct channels up top for people who'd rather call or email than fill in the form.
 export default function ContactPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-16 text-center sm:px-6">

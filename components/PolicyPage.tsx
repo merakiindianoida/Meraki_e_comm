@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { BUSINESS, POLICY, POLICY_PAGES } from "@/lib/siteInfo";
 
-// Common shell for the four policy pages - title, cross-links, and a contact footer.
 export default function PolicyPage({
   title,
   current,
@@ -60,7 +59,6 @@ export default function PolicyPage({
   );
 }
 
-// Section heading + body, so each policy page reads as plain content rather than markup.
 export function PolicySection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>

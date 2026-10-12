@@ -3,9 +3,6 @@
 import { useState } from "react";
 import CheckoutClient, { type SavedAddress } from "@/components/CheckoutClient";
 
-// Thin client wrapper around CheckoutClient for the single-item "Buy Now"
-// flow - it bypasses the bag entirely, so quantity lives in local state
-// here rather than in the cart store. See app/products/[slug]/checkout.
 export default function BuyNowCheckout({
   productId,
   name,

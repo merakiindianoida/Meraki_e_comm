@@ -1,9 +1,6 @@
 import "server-only";
 import crypto from "crypto";
 
-// Standard Checkout v2 (OAuth-based) — PhonePe's current API as of this
-// integration. Sandbox vs production is one env var (PHONEPE_ENV), not a
-// separate codepath, since the two only differ by base URL.
 const IS_SANDBOX = process.env.PHONEPE_ENV !== "PRODUCTION";
 
 const AUTH_BASE = IS_SANDBOX
@@ -14,12 +11,6 @@ const PG_BASE = IS_SANDBOX
   ? "https://api-preprod.phonepe.com/apis/pg-sandbox"
   : "https://api.phonepe.com/apis/pg";
 
-// Cached in module scope — fine on a warm serverless instance (saves a
-// token round-trip per checkout), harmless on a cold one (just refetches).
-// This is a plain in-memory cache, not a distributed one: two concurrent
-// cold starts could each fetch their own token, which costs nothing extra
-// since PhonePe doesn't limit token issuance per merchant in a way this
-// volume would ever hit.
 let cachedToken: { value: string; expiresAt: number } | null = null;
 
 async function getAccessToken(): Promise<string> {
@@ -54,9 +45,6 @@ export type CreatePhonePeOrderResult = {
   redirectUrl: string;
 };
 
-// merchantOrderId is always our own Order.id (a uuid) — no separate id
-// column needed to look it up again later, and it already satisfies
-// PhonePe's format constraint (alphanumeric + hyphens, under 63 chars).
 export async function createPhonePeOrder(params: {
   merchantOrderId: string;
   amountPaise: number;
@@ -112,11 +100,7 @@ export async function getPhonePeOrderStatus(
   };
 }
 
-// Webhook auth: PhonePe's "SHA / Basic Auth" mode sends an Authorization
-// header equal to SHA256("username:password") using the credentials set
-// when the webhook was created in the PhonePe dashboard (Developer
-// Settings -> Webhook). Chose this over their HMAC option since it's one
-// hash comparison against two known values, rather than key-id lookups.
+// Keep timingSafeEqual to avoid leaking webhook credentials through response timing.
 export function verifyPhonePeWebhookAuth(authorizationHeader: string | null): boolean {
   if (!authorizationHeader) return false;
 
@@ -125,8 +109,6 @@ export function verifyPhonePeWebhookAuth(authorizationHeader: string | null): bo
     .update(`${process.env.PHONEPE_WEBHOOK_USERNAME}:${process.env.PHONEPE_WEBHOOK_PASSWORD}`)
     .digest("hex");
 
-  // Constant-time compare — a plain === here would let an attacker learn
-  // the expected hash one byte at a time via response-timing differences.
   const a = Buffer.from(authorizationHeader);
   const b = Buffer.from(expected);
   if (a.length !== b.length) return false;

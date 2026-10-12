@@ -1,8 +1,5 @@
 import { OrderStatus } from "@/app/generated/prisma/client";
 
-// Small color-coded label shared by the order confirmation page and My
-// Orders list, so a customer sees the same visual language for "where's my
-// order" in both places.
 const STATUS_STYLES: Record<OrderStatus, string> = {
   PENDING: "border-amber-200 bg-amber-50 text-amber-700",
   PAYMENT_FAILED: "border-red-200 bg-red-50 text-red-700",

@@ -3,10 +3,6 @@ import { auth } from "@clerk/nextjs/server";
 import { getSavedAddresses } from "@/lib/customer";
 import BagCheckoutClient from "@/components/BagCheckoutClient";
 
-// Server wrapper so saved addresses (which live in the database) can be
-// fetched here and handed to the client component - the bag itself only
-// exists in localStorage, which is why BagCheckoutClient still has to be
-// a Client Component.
 export default async function CheckoutPage() {
   const { userId } = await auth();
   if (!userId) {

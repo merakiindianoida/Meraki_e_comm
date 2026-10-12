@@ -70,17 +70,8 @@ export async function generateMetadata({
   };
 }
 
-// Same reasoning as app/products/[slug]/page.tsx - not personalized, no
-// need for a live DB query per visit. Cached per distinct filter/search
-// combination.
 export const revalidate = 60;
 
-// Builds the href for a filter chip by merging one changed field (category,
-// audience, or search) into whatever's currently in the URL, so filters
-// stack instead of clobbering each other. `"key" in patch` (rather than
-// `patch.key !== undefined`) is what lets a caller explicitly clear a
-// filter by passing `{ category: undefined }` - omitting the key entirely
-// would just fall through to `current` instead.
 function chipHref(
   current: { category?: string; audience?: string; search?: string },
   patch: { category?: string; audience?: string; search?: string }
@@ -102,9 +93,6 @@ export default async function ProductsPage({
   searchParams: Promise<{ category?: string; audience?: string; search?: string }>;
 }) {
   const { category, audience, search: rawSearch } = await searchParams;
-  // Same sanitization as the public API route (trim + length cap) — this
-  // comes straight from a URL param, so it's attacker-controlled same as
-  // there, even though it only feeds a parameterized Prisma query.
   const search = rawSearch?.trim().slice(0, MAX_SEARCH_LENGTH) || undefined;
 
   const products = await prisma.product.findMany({
@@ -114,12 +102,6 @@ export default async function ProductsPage({
       ...(audience && { audience }),
       ...(search && { name: { contains: search, mode: "insensitive" } }),
     },
-    // Ascending, not the usual "newest first" — the 40 real products were
-    // imported in one sequential run in exact Excel "Photo #" order, so
-    // createdAt asc reproduces that same serial order for now. Revisit
-    // once products are added individually over time rather than in one
-    // batch, since new ones would then just land at the end by date
-    // instead of wherever they'd belong in a catalog sense.
     orderBy: { createdAt: "asc" },
   });
 

@@ -7,12 +7,6 @@ import AddressFields from "@/components/AddressFields";
 import { formatPrice } from "@/lib/catalog";
 import { SERVICE_AREA_LABEL } from "@/lib/serviceArea";
 
-// Generic over line items rather than tied to a single product - this is
-// what lets both /checkout (whatever's in the bag) and
-// /products/[slug]/checkout (a single-item Buy Now, bypassing the bag)
-// reuse the exact same form, summary and submit logic instead of forking
-// it. Callers own the item list and quantity state; this component only
-// renders it and talks to the API.
 export type CheckoutLineItem = {
   id: string;
   name: string;
@@ -44,13 +38,7 @@ export default function CheckoutClient({
 }: {
   items: CheckoutLineItem[];
   onQuantityChange: (id: string, quantity: number) => void;
-  // Called right before redirecting to PhonePe - e.g. the bag-based
-  // checkout clears the cart here; the single-item Buy Now flow has
-  // nothing to clear, so it just omits this prop.
   onOrderPlaced?: () => void;
-  // Signed-in customer's saved addresses (see app/account/addresses) -
-  // empty for a customer who has never saved one, in which case this just
-  // falls back to the plain phone + address fields it always had.
   addresses?: SavedAddress[];
 }) {
   const [submitting, setSubmitting] = useState(false);
@@ -101,8 +89,6 @@ export default function CheckoutClient({
       }
 
       onOrderPlaced?.();
-      // A full navigation, not router.push — PhonePe's checkout page is a
-      // different origin entirely, so this has to leave the Next.js app.
       window.location.href = data.redirectUrl;
     } catch {
       setError("Couldn't reach the server. Check your connection and try again.");
@@ -213,9 +199,7 @@ export default function CheckoutClient({
         <p className="text-center text-[11px] text-[var(--muted)]">
           You&apos;ll be redirected to PhonePe to complete payment securely.
         </p>
-        {/* Confirmed with the client 2026-07-29: self-shipped, Delhi NCR
-            only, no courier integration — restated here since this is the
-            last screen before an order is actually placed. */}
+        
         <p className="text-center text-[11px] text-[var(--muted)]">
           We currently ship within Delhi NCR only ({SERVICE_AREA_LABEL}). Delivery takes 3–10
           business days.

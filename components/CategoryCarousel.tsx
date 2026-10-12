@@ -5,12 +5,6 @@ import Link from "next/link";
 import CategoryIcon from "@/components/CategoryIcon";
 import type { Category } from "@/lib/catalog";
 
-// Exactly 6 tiles visible at a time, centered, arrows page by 2 - with 8
-// real categories that means one arrow press reveals the remaining 2. Track
-// width/position are plain percentages of the track's own box, so the math
-// doesn't depend on measuring pixel widths in an effect: with VISIBLE=6
-// and `total` categories, the track is (total/VISIBLE)*100% wide and each
-// step of the window shifts it by (1/total)*100%.
 const VISIBLE = 6;
 const STEP = 2;
 
@@ -60,13 +54,7 @@ export default function CategoryCarousel({
               style={{ width: `${100 / total}%` }}
             >
               <CategoryIcon category={category} />
-              {/* break-words is the real fix here — a single-word name like
-                  "BRACELET" has no space to wrap at, so without it the text
-                  paints outside its 45px-ish mobile tile (invisible to a
-                  layout-box overlap check, since the box itself is sized
-                  correctly; only the painted text bleeds into the next
-                  tile). Smaller text at the narrowest breakpoint means that
-                  break less often actually has to fire. */}
+              
               <p className="mt-3 break-words text-[11px] font-medium uppercase leading-tight tracking-[0.05em] text-[var(--ink)] sm:text-sm">
                 {category}
               </p>

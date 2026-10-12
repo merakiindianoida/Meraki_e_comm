@@ -68,22 +68,8 @@ export async function generateMetadata({
   };
 }
 
-// Not personalized (same for every visitor) and doesn't change often enough
-// to justify a live DB query on every single visit - that was the whole
-// cause of the ~1-2s delay on clicking into a product. Admin edits below
-// (see app/admin/(dashboard)/products/actions.ts) revalidate this path
-// on-demand, so this window is just an upper bound on staleness, not the
-// only way this page gets fresh data.
 export const revalidate = 60;
 
-// Without this, a dynamic segment with no known paths never enters Next's
-// static/ISR pipeline at all - `revalidate` above silently does nothing
-// and every visit hits the DB live, which was the actual root cause of the
-// delay (confirmed: X-Vercel-Cache stayed MISS even with revalidate set,
-// while a plain static route like /policies correctly showed PRERENDER).
-// Listing every slug at build time is cheap at this catalog size, and any
-// product added later still works via on-demand generation + caching -
-// dynamicParams defaults to true, it just isn't pre-built until first hit.
 export async function generateStaticParams() {
   const products = await prisma.product.findMany({
     where: { isActive: true },
@@ -101,25 +87,13 @@ export default async function ProductDetailPage({
 
   const product = await prisma.product.findUnique({ where: { slug } });
 
-  // Same rule as the API route: a deactivated product 404s exactly like a
-  // slug that never existed, so there's no way to tell "discontinued" apart
-  // from "never was" just by hitting the URL.
   if (!product || !product.isActive) {
     notFound();
   }
 
-  // `[null]` as the fallback (instead of an empty array) means the gallery
-  // always renders at least one slot - real photo if we have it, the
-  // placeholder box if we don't - rather than needing a separate
-  // no-images-at-all branch further down.
   const images = product.images.length > 0 ? product.images : [null];
   const inStock = product.stock > 0;
 
-  // Exact stock counts and internal SKUs aren't shown to visitors - both
-  // leak real business data (sell-through rate per product, and for SKUs,
-  // total catalog size + add order via the sequential numbering). "Only a
-  // few left" below a threshold is the normal, expected amount of urgency
-  // messaging; a running inventory count is not.
   const LOW_STOCK_THRESHOLD = 5;
   const availabilityLabel = !inStock
     ? "Out of stock"
@@ -155,27 +129,10 @@ export default async function ProductDetailPage({
         </Link>
       </nav>
 
-      {/* items-stretch (grid's default) makes this row as tall as the
-          right column's content naturally needs — the gallery below
-          matches that height on desktop (md:flex-1 within a md:h-full
-          flex column) instead of forcing its own height via aspect-square
-          and running past the buttons. Mobile keeps aspect-square since
-          there's no sibling height to match once the columns stack. */}
+      
       <div className="mt-7 grid gap-10 md:grid-cols-2 md:items-stretch">
         <div className="anim-fade-up flex min-h-0 flex-col items-start gap-3 md:h-full md:min-h-0">
-          {/* Fixed square, sized off the column's HEIGHT (matching the
-              buttons) rather than its width — md:flex-none so it stops
-              stretching to fill the column, md:aspect-square so its width
-              just follows from that height. Every product photo is a true
-              1:1 square now, so a square box + object-cover shows the
-              whole photo with zero cropping and zero letterbox gaps; it
-              just may not span the full column width, which beats either
-              overflowing past the buttons or showing white bars.
-              md:max-w-full caps it there too - a product with an unusually
-              tall text column (long description, review line, etc.) made
-              this compute wider than its own grid column and spill over
-              the buttons on the right; capping the width means it just
-              stops being a perfect square in that rare case instead. */}
+          
           <div className="relative aspect-square w-full overflow-hidden border border-[var(--border-strong)] bg-white md:h-full md:w-auto md:max-w-full md:flex-none">
             {images[0] ? (
               <Image
@@ -245,10 +202,7 @@ export default async function ProductDetailPage({
             </p>
           )}
 
-          {/* Fixed at 4 entries (Category, Purity, Weight, Availability) —
-              always the same shape regardless of which optional fields a
-              product has, so the 2-col grid never lands on an odd 3rd item
-              with an empty gap next to it. */}
+          
           <dl className="mt-1 grid grid-cols-2 gap-4 border-y border-[var(--border)] py-5 text-sm">
             <div>
               <dt className="text-xs uppercase tracking-[0.1em] text-[var(--muted)]">
@@ -280,19 +234,13 @@ export default async function ProductDetailPage({
             </div>
           </dl>
 
-          {/* Confirmed with the client 2026-07-29: they ship orders
-              themselves, no courier/Shiprocket integration, Delhi NCR only.
-              Stated plainly here rather than implied, since it directly
-              affects whether a visitor outside NCR should even buy. */}
+          
           <p className="mt-5 text-sm text-[var(--muted)]">
             We currently ship within <span className="text-[var(--ink)]">Delhi NCR only</span>,
             with delivery in <span className="text-[var(--ink)]">3–10 business days</span>.
           </p>
 
-          {/* Add to Bag and Buy Now both create a real order on submit (see
-              POST /api/orders) — Buy Now just skips the bag, carrying the
-              chosen quantity straight through to /products/[slug]/checkout
-              instead. See ProductActions for the quantity stepper. */}
+          
           <ProductActions
             product={{
               id: product.id,

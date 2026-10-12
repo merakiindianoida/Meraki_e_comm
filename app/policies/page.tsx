@@ -7,7 +7,6 @@ export const metadata: Metadata = {
   description: "Shipping, refunds & returns, privacy, and terms for Meraki.",
 };
 
-// Kept as an index so older links to /policies still land somewhere useful.
 export default function PoliciesPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6">

@@ -1,9 +1,6 @@
 import { z } from "zod";
 import { CATEGORIES, AUDIENCES } from "@/lib/catalog";
 
-// Shared between the admin product form (client-side validation feedback)
-// and the create/update Server Actions (the source of truth) - same
-// division of responsibility as lib/orderSchema.ts.
 export const productFormSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(200),
   category: z.enum(CATEGORIES, { error: "Choose a category" }),
@@ -18,16 +15,12 @@ export const productFormSchema = z.object({
     .array(z.string().trim().url("Each image must be a valid URL"))
     .max(12, "That's a lot of images — trim it down a little"),
   collections: z.array(z.string()).optional(),
-  // Not URL-validated like images - a local /videos/... path is valid
-  // during testing (see components/ShoppableVideoFeed.tsx), a Cloudinary
-  // URL is what production actually uses.
+  // Local video paths are for development; production clips use Cloudinary URLs.
   videoUrl: z.string().trim().max(500).optional(),
 });
 
 export type ProductFormInput = z.infer<typeof productFormSchema>;
 
-// Turns "Fine Box Chain" into "fine-box-chain" - same convention the seed
-// data already uses. Collisions get a numeric suffix in the caller.
 export function slugify(name: string): string {
   return name
     .toLowerCase()

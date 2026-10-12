@@ -1,11 +1,5 @@
 import { SignIn } from "@clerk/nextjs";
 
-// Deliberately not linked from anywhere in the customer-facing nav - this
-// is a separate entry point from customer sign-in, even though both run on
-// the same underlying Clerk instance. Role checking (see proxy.ts and
-// lib/adminAuth.ts) is what actually enforces the boundary, not obscurity:
-// anyone can sign up via Clerk, but only an account with publicMetadata.role
-// === "admin" (set manually in the Clerk dashboard) ever gets past proxy.ts.
 export default async function AdminLoginPage({
   searchParams,
 }: {

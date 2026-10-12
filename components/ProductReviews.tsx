@@ -26,9 +26,6 @@ function StarRow({ rating }: { rating: number }) {
   );
 }
 
-// First name + last initial only - a reviewer's full name is real personal
-// data, and this is the same "first name, last initial" convention every
-// major storefront uses on public reviews.
 function displayName(fullName: string | null): string {
   if (!fullName) return "Verified Buyer";
   const parts = fullName.trim().split(/\s+/);
@@ -44,9 +41,6 @@ export type ProductReview = {
   customer: { name: string | null };
 };
 
-// Purely presentational — the product page fetches the reviews and average
-// server-side and hands them in, same division of labor as everywhere else
-// on this site that queries Prisma in the page and passes plain props down.
 export default function ProductReviews({
   reviews,
   averageRating,

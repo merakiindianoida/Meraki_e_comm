@@ -5,21 +5,11 @@ import type { OrderStatus } from "@/app/generated/prisma/client";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// merakifinesilver.com verified in Resend 2026-08-28 - this is what
-// unblocks sending to real customer addresses instead of only the
-// account's own signup email (see git history for the pre-verification
-// restriction this used to hit).
 const FROM = "Meraki <orders@merakifinesilver.com>";
 
-// orders@ isn't a monitored inbox — replies to any of these emails should
-// land somewhere a human actually reads, same address the contact form uses.
 const REPLY_TO = "merakiindianoida@gmail.com";
 
-// Product images live at relative /product-photos/... paths (see Product.images
-// in schema.prisma) - fine for the site itself, but an email client has no
-// origin to resolve a relative URL against, so these need to be absolute.
-// This MUST be the real production domain once deployed, or every image in
-// every order email 404s in the customer's inbox.
+// Set NEXT_PUBLIC_APP_URL to the production domain so email image links resolve.
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 export type OrderEmailItem = {
@@ -44,18 +34,10 @@ export function toOrderEmailItems(
   }));
 }
 
-// Every function here swallows its own errors rather than throwing -
-// a failed email should never take down order creation or an admin status
-// update, which is why these are called fire-and-forget from their call
-// sites rather than awaited-and-checked.
 async function send(to: string, subject: string, html: string) {
   try {
     const result = await resend.emails.send({ from: FROM, to, subject, html, replyTo: REPLY_TO });
     if (result.error) {
-      // Resend's error is an Error-like object whose message/name aren't
-      // enumerable own properties — logging it directly renders as "{}"
-      // in most consoles (including Next's dev overlay), which hides the
-      // one thing actually worth seeing. Pull those fields out explicitly.
       console.error("Resend send failed:", {
         name: result.error.name,
         message: result.error.message,
@@ -66,9 +48,6 @@ async function send(to: string, subject: string, html: string) {
   }
 }
 
-// Absolute, falling back to a plain placeholder box when a product has no
-// image at all (existing data allows an empty images[] - see ProductCard)
-// rather than emitting a broken <img> tag.
 function itemImageCell(image: string | null): string {
   if (!image) {
     return `<td style="width:64px;padding:12px 0;"><div style="width:56px;height:56px;background:#f2efe9;border:1px solid #e6e0d4;"></div></td>`;
@@ -106,10 +85,6 @@ function orderItemsTable(items: OrderEmailItem[], totalAmount: string | number):
     </table>`;
 }
 
-// Shared chrome (wordmark header + footer) for every customer-facing email.
-// A styled text wordmark rather than the SVG logo - inline SVG support is
-// inconsistent across email clients (notably Outlook), and this domain has
-// no PNG/JPG copy of the mark to fall back to.
 function emailShell(bodyHtml: string): string {
   return `
     <div style="font-family:Georgia,'Times New Roman',serif;background:#faf9f6;padding:32px 16px;">
@@ -152,15 +127,8 @@ export async function sendOrderConfirmationEmail(params: {
   await send(params.to, `Order Confirmed — #${orderNumber}`, emailShell(body));
 }
 
-// Meraki's own inbox for enquiries — set once here rather than threaded
-// through every call site, since (unlike order/status emails) there's only
-// ever one destination for a contact-form submission.
 const CONTACT_INBOX = "merakiindianoida@gmail.com";
 
-// The order/status emails above interpolate straight from authenticated
-// session data (Clerk name, a saved address) — this one is the one place
-// an anonymous visitor's free-text ends up in an HTML email, so it's the
-// one place that actually needs escaping before interpolation.
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -216,8 +184,6 @@ const STATUS_COPY: Partial<Record<OrderStatus, { subject: string; body: string }
   },
 };
 
-// Meaningful order changes get an email; PENDING and PAID aren't separate
-// updates from the checkout and order-confirmation steps.
 export async function sendOrderStatusEmail(params: {
   to: string;
   customerName: string | null;
@@ -243,7 +209,6 @@ export async function sendOrderStatusEmail(params: {
   await send(params.to, copy.subject, emailShell(body));
 }
 
-// Internal alert to the shop inbox - someone paid for a piece that had already sold out.
 export async function sendStockShortfallAlert(params: {
   orderId: string;
   customerName: string | null;

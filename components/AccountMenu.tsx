@@ -4,13 +4,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useClerk, useUser } from "@clerk/nextjs";
 
-// Custom account trigger + flyout - replaces Clerk's stock <UserButton/>
-// popover so the panel can hold our own content (My Orders today; a
-// Returns/ratings entry point once those exist) instead of just "Manage
-// account / Sign out". Opens on hover for mouse users and on click for
-// touch/keyboard, closes on an outside click or Escape. Has to be stateful
-// (not the pure-CSS group-hover trick Header's NavDropdown uses) because
-// signed-in vs signed-out isn't knowable until Clerk loads client-side.
 export default function AccountMenu() {
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
@@ -37,9 +30,6 @@ export default function AccountMenu() {
     };
   }, [open]);
 
-  // Reserve the icon's footprint while Clerk is still resolving auth state,
-  // rather than flashing the signed-out panel first - same effect Clerk's
-  // own <Show> gives for free, done by hand here since this is no longer it.
   if (!isLoaded) {
     return <div className="h-10 w-10" />;
   }

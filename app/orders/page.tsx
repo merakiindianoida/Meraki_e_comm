@@ -11,10 +11,6 @@ import CancelOrderButton from "@/components/CancelOrderButton";
 import { reconcilePendingPhonePeOrder } from "@/lib/orderFulfillment";
 import { canCustomerCancelOrder } from "@/lib/orderStatus";
 
-// Requires a signed-in Clerk user - proxy.ts already redirects anonymous
-// visitors here before this ever renders, but the check is repeated here
-// for the same reason every other auth-gated route in this repo repeats
-// it: a matcher change or a moved route shouldn't silently drop coverage.
 export default async function MyOrdersPage() {
   const { userId } = await auth();
   if (!userId) {
@@ -23,8 +19,6 @@ export default async function MyOrdersPage() {
 
   const customer = await prisma.customer.findUnique({ where: { clerkId: userId } });
 
-  // No Customer row yet just means this account has never completed
-  // checkout - an empty state, not an error.
   let orders = customer
     ? await prisma.order.findMany({
         where: { customerId: customer.id },
@@ -104,10 +98,7 @@ export default async function MyOrdersPage() {
                         parseFloat(item.priceAtSale.toString()) * item.quantity
                       )}
                     </span>
-                    {/* Rating and returns are per purchased item, and only
-                        make sense once it's actually arrived - no point
-                        offering either while the order is still pending or
-                        in transit. */}
+                    
                     {(order.status === "DELIVERED" || (order.status === "REFUNDED" && order.deliveredAt)) && (
                       <div className="flex w-full items-center gap-4 sm:w-auto">
                         <ReviewForm orderItemId={item.id} existingReview={item.review} />
@@ -128,9 +119,7 @@ export default async function MyOrdersPage() {
                 >
                   View details &rarr;
                 </Link>
-                {/* Cancellation is order-wide (you can't part-cancel an
-                    order once it's a single checkout), unlike rating/
-                    returns above which are per item. */}
+                
                 {canCustomerCancelOrder(order.status, order.firstPackedAt) && (
                   <CancelOrderButton orderId={order.id} />
                 )}

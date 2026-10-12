@@ -1,4 +1,3 @@
-// Business + support details shown in the footer, contact page and policy pages - edit here, not per page.
 export const BUSINESS = {
   name: "Meraki Fine Silver",
   location: "Noida, Uttar Pradesh, India",
@@ -10,7 +9,6 @@ export const BUSINESS = {
   website: "merakifinesilver.com",
 } as const;
 
-// Shared by every policy page so the numbers can't drift between them.
 export const POLICY = {
   lastUpdated: "27 September 2026",
   shippingArea: "Delhi NCR",

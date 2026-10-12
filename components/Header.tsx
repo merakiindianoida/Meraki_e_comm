@@ -23,10 +23,6 @@ function Chevron() {
   );
 }
 
-// Dropdown panel shell shared by all three nav items - hover-only (pure
-// CSS, no client component), fades + slides down via the same transition
-// on each. `trigger` is always a real <Link> so there's a sane fallback
-// destination on touch devices that can't hover to reveal the panel.
 function NavDropdown({
   trigger,
   href,
@@ -66,9 +62,6 @@ function DropdownLink({ href, children }: { href: string; children: React.ReactN
 }
 
 export default async function Header() {
-  // Powers the New Arrivals dropdown with real data - same "newest first"
-  // ordering /products already uses by default, so the dropdown and its
-  // "View all" link are always consistent with each other.
   const latest = await prisma.product.findMany({
     where: { isActive: true },
     orderBy: { createdAt: "desc" },
@@ -78,24 +71,15 @@ export default async function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-[var(--background)]/90 shadow-sm backdrop-blur-md">
-      {/* Announcement strip - copy here should stay in sync with the trust
-          bar on the homepage; both are hardcoded until the policy details
-          (shipping threshold, returns window) are confirmed by the client. */}
+      
       <div className="bg-[var(--ink)] py-2.5 text-center text-xs uppercase tracking-[0.2em] text-white">
         BIS Hallmarked 925 Silver &middot; Handcrafted &middot; Made With Soul
       </div>
 
-      {/* Single row, full-bleed (no max-w container) so the logo sits at
-          the true edge of the viewport rather than a centered column with
-          dead space beyond it on wide screens. Logo + dropdowns cluster
-          together on the left; search and icons push to the right via
-          ml-auto. Logo is 20% larger than the previous pass (h-12 -> 3.6rem,
-          i.e. 48px -> 57.6px). */}
+      
       <div className="relative border-b border-[var(--border)] bg-white">
         <div className="flex items-center gap-4 px-4 py-3 sm:px-6 lg:gap-8 lg:px-10">
-          {/* The mobile nav closes its outer and nested disclosures as soon
-              as a link is selected; native <details> otherwise stays open
-              across same-layout client navigation. */}
+          
           <MobileNavigation
             latest={latest.map((product) => ({
               ...product,
@@ -173,9 +157,7 @@ export default async function Header() {
 
           </nav>
 
-          {/* ml-auto instead of justify-between on the row — lets the nav
-              above hug the logo tightly while this block still pins to the
-              far right regardless of how much space the nav takes up. */}
+          
           <div className="ml-auto flex shrink-0 items-center gap-4">
             <SearchBar className="hidden md:block md:w-[10rem] lg:w-[19.2rem]" />
             <div className="flex items-center gap-1">

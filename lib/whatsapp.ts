@@ -31,8 +31,6 @@ export async function sendOrderWhatsAppUpdate(params: {
   const apiVersion = process.env.WHATSAPP_API_VERSION;
   const templateName = process.env.WHATSAPP_ORDER_STATUS_TEMPLATE ?? "meraki_order_status_update";
 
-  // WhatsApp stays disabled until Meta setup is complete. Email status
-  // notifications continue independently and are never blocked by this.
   if (!params.optedIn || !params.to || !token || !phoneNumberId || !apiVersion) return;
 
   const to = normalizeWhatsAppPhone(params.to);

@@ -22,9 +22,6 @@ export type AddressListItem = {
   isDefault: boolean;
 };
 
-// Client-side only for the "which form is open" toggle state - the actual
-// reads/writes all go through Server Actions in
-// app/account/addresses/actions.ts, this just decides what's on screen.
 export default function AddressManager({ addresses }: { addresses: AddressListItem[] }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);

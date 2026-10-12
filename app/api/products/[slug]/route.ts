@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { toPublicProduct } from "@/lib/catalog";
 
-// Single-product lookup by slug. Same audience as the list route above -
-// external/client-side consumers, not our own pages.
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -15,8 +13,6 @@ export async function GET(
       where: { slug },
     });
 
-    // Inactive products 404 the same as missing ones - a discontinued/hidden
-    // SKU shouldn't be distinguishable from one that never existed.
     if (!product || !product.isActive) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }

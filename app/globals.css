@@ -1,23 +1,7 @@
 @import "tailwindcss";
 
-/* Design tokens — exact spec from the client-facing reference (colors sourced
-   from the product photography: powder blue velvet display boxes on lavender
-   satin). Radius is 0 everywhere on purpose: sharp corners throughout for a
-   luxury-editorial feel rather than the softer rounded-corners look most
-   storefronts default to. */
 :root {
-  /* --background and --accent are pinned to the "Crisp Stucco" (#ECEFF4)
-     and "Azure Breeze" (#6FA8E5) swatches from the client's reference
-     palette — the closest two of its four colors to what the site already
-     used. Purple/lavender (the palette's other two swatches) deliberately
-     stay out of the site chrome; only the product photography carries that
-     tone. */
   --background: #eceff4;
-  /* --surface/--surface-strong/--border/--border-strong are all tints or
-     opacities of the same Azure Breeze RGB (111, 168, 229) as --accent —
-     previously each was its own separately-picked pale blue, which read as
-     several near-but-different blues sitting next to each other. --ink
-     (navy) and --muted (secondary text) are untouched on purpose. */
   --surface: #e9f2fb;
   --surface-strong: #d7e7f8;
   --ink: #131d2b;
@@ -27,14 +11,6 @@
   --border: rgba(111, 168, 229, 0.25);
   --border-strong: rgba(111, 168, 229, 0.5);
 
-  /* Tailwind's bare `transition` utility (and transition-colors,
-     transition-opacity, etc.) reads these two variables for its default
-     speed — overriding them here slows every hover/focus state that
-     doesn't specify its own duration, sitewide, in one place, rather than
-     hunting down every bare `transition` class across the codebase.
-     150ms (Tailwind's default) reads as an instant snap; this is a
-     "gliding" curve instead — slow to start, decelerating in, closer to
-     how a premium site's micro-interactions actually move. */
   --default-transition-duration: 450ms;
   --default-transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -58,9 +34,6 @@ body {
   color: var(--foreground);
 }
 
-/* On-load entrance + shared hover treatments — pure CSS, no animation
-   library and no client component conversion needed since these run purely
-   on paint/hover regardless of Server/Client Component. */
 @keyframes fade-up {
   from {
     opacity: 0;
@@ -73,10 +46,6 @@ body {
 }
 
 .anim-fade-up {
-  /* Slower + a gentler deceleration curve (expo-out) than a plain ease-out
-     — reads as a calmer, more deliberate arrival rather than a snappy pop.
-     1.08s = 0.9s + 20%, per feedback that the homepage load-in still felt
-     a touch quick. */
   animation: fade-up 1.08s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
@@ -86,8 +55,6 @@ body {
   }
 }
 
-/* card-lift: shadow + translateY(-3px) on hover, per spec, for every
-   product/category card. */
 .hover-lift {
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease;
 }
@@ -97,9 +64,6 @@ body {
   box-shadow: 0 14px 28px -14px rgb(19 29 43 / 0.3);
 }
 
-/* underline-hover: a 1px underline draws in from the left on hover, via a
-   pseudo-element rather than the text-decoration property, so its timing
-   and color are controllable. Applied to nav/footer links. */
 .underline-hover {
   position: relative;
 }
@@ -121,11 +85,6 @@ body {
   transform: scaleX(1);
 }
 
-/* Hides the scrollbar on the category carousel track — the arrow buttons
-   are the intended control, native drag-scroll still works underneath,
-   just without a visible scrollbar competing with them visually.
-   scrollbar-width (Firefox) is set inline since it's a plain CSS property;
-   this covers the WebKit/Blink pseudo-element, which has no such property. */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

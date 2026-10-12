@@ -4,16 +4,6 @@ import { AUDIENCES } from "@/lib/catalog";
 import NewsletterForm from "@/components/NewsletterForm";
 import { BUSINESS, POLICY_PAGES } from "@/lib/siteInfo";
 
-// Deliberately doesn't repeat the category list from the header nav (that
-// was here before and just duplicated it). "Shop For" below uses audience
-// instead of category - a filter that otherwise has no entry point in the
-// nav at all, so it's genuinely new rather than a re-listing.
-//
-// Dark navy background (#0E1822) - the one section on the site darker than
-// the editorial banner's --ink, so it reads as the true "floor" of the
-// page. The logo is monochrome black-on-white and would vanish here, so it
-// runs through Tailwind's `invert` filter just in this one spot; the
-// header's copy of the same file is untouched.
 export default function Footer() {
   return (
     <footer className="bg-[#0E1822]">
@@ -31,9 +21,7 @@ export default function Footer() {
             Meraki Fine Silver — 925 silver jewellery, made with soul — for every member
             of the family.
           </p>
-          {/* Instagram is real now (client's handle, confirmed 2026-08-08) -
-              swapped over to an actual link. WhatsApp is real too (client's
-              number, confirmed 2026-08-28). */}
+          
           <div className="mt-4 flex gap-1">
             <a
               href="https://www.instagram.com/meraki_fine_silver/"
@@ -63,10 +51,7 @@ export default function Footer() {
               title="WhatsApp"
               className="inline-flex h-10 w-10 items-center justify-center text-white/70 transition hover:text-[var(--accent)]"
             >
-              {/* Official mark, from simple-icons (unpkg.com/simple-icons/icons/whatsapp.svg) -
-                  not hand-drawn, so the shape is exact. Sized down from the
-                  other two icons' h-6 w-6 - a solid fill reads visually
-                  larger than their thin stroke outlines at the same box size. */}
+              
               <svg viewBox="0 0 24 24" className="h-5 w-5">
                 <path
                   fill="currentColor"
@@ -95,7 +80,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Help - the policy pages payment gateways and customers both look for */}
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-white/40">
             Help
@@ -123,7 +107,6 @@ export default function Footer() {
           <p className="text-xs uppercase tracking-[0.2em] text-white/40">
             Get in Touch
           </p>
-          {/* Phone deliberately left off the footer - it's only on the contact page. */}
           <ul className="mt-3 space-y-1.5 text-sm text-white/80">
             <li>
               <a

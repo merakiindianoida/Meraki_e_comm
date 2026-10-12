@@ -19,10 +19,6 @@ const VALID_STATUSES = new Set<string>(Object.values(OrderStatus));
 export async function updateOrderStatus(id: string, status: string) {
   await requireAdmin();
 
-  // `status` arrives from a <select> value - a plain string, not
-  // guaranteed to be a real OrderStatus (a stale client, a forged
-  // request). Reject anything that isn't one of the real values
-  // rather than letting Prisma throw further down.
   if (!VALID_STATUSES.has(status)) {
     throw new Error("Invalid order status");
   }
@@ -49,16 +45,8 @@ export async function updateOrderStatus(id: string, status: string) {
     }
   }
 
-  // PENDING -> PAID and (PENDING or PAID) -> CANCELLED both move real
-  // inventory (decrement or restore) - routed through the same functions
-  // the PhonePe webhook and customer self-cancel use, rather than a raw
-  // status flip that would silently desync stock from what actually sold.
-  // Every other transition (SHIPPED, DELIVERED, ...) never touches stock,
-  // so a plain update is correct there.
   if (status === "PAID" && current.status === "PENDING") {
     await markOrderPaid(id, current.phonepeTransactionId);
-    // markOrderPaid no longer refreshes the cached storefront itself;
-    // server actions are allowed to, so do it here.
     await revalidateStorefrontForOrder(id);
   } else if (
     status === "CANCELLED" &&
@@ -69,10 +57,8 @@ export async function updateOrderStatus(id: string, status: string) {
       throw new Error("The order changed before it could be cancelled. Refresh and try again.");
     }
   } else if (status === "CANCELLED") {
-    // Any other starting status can't be cancelled from here.
     throw new Error("This order can't be cancelled from its current status.");
   } else if (status !== current.status && status !== "REFUNDED") {
-    // Keeps the original delivery date if it's re-saved as DELIVERED; cleared if moved back.
     const deliveredAt =
       status === "DELIVERED" ? (current.status === "DELIVERED" ? current.deliveredAt : new Date()) : null;
     const firstPackedAt =
@@ -94,14 +80,6 @@ export async function updateOrderStatus(id: string, status: string) {
   });
   if (!order) return;
 
-  // guestEmail/guestName are the point-in-time snapshot taken when the
-  // order was placed (see POST /api/orders) - using those instead of
-  // looking up the Customer means this still works even if their profile
-  // changes later. Awaited (not `void`) so Vercel doesn't freeze the
-  // function before the email is sent; sendOrderStatusEmail swallows its
-  // own errors, so a failed email never breaks the admin's status update.
-  // Only send when the status actually changed, so re-saving the same
-  // status doesn't email the customer again.
   const movedForward = isForwardOrderTransition(current.status, order.status);
   if (order.guestEmail && movedForward && order.status !== "CANCELLED") {
     await sendOrderStatusEmail({

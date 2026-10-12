@@ -47,12 +47,8 @@ function VideoTile({
       return;
     }
 
-    // Don't assign a source until the tile is selected. Once attached, keep
-    // it so scrolling back to this reel doesn't have to restart the request.
     if (video.getAttribute("src") !== src) video.src = src;
 
-    // Muted inline playback is permitted by mobile browsers. Catch a
-    // browser-level rejection so autoplay never causes an unhandled error.
     void video.play().catch(() => {});
   }, [active, src]);
 
@@ -97,11 +93,6 @@ function VideoTile({
   );
 }
 
-// Horizontal scroll-snap rail of short vertical clips reposted from
-// Instagram - pure social-content showcase, not tied to the Product model
-// at all. No shop card, no price, no add-to-bag: nothing here is meant to
-// be bought, just watched. Renders nothing if there are no clips yet,
-// rather than a "coming soon" placeholder.
 export default function ShoppableVideoFeed({ videos }: { videos: string[] }) {
   const [activeSrc, setActiveSrc] = useState<string | null>(null);
   const visibilityBySrc = useRef(new Map<string, number>());

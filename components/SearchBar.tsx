@@ -3,18 +3,11 @@
 import { useEffect, useState } from "react";
 import { STOREFRONT_CATEGORIES } from "@/lib/storefrontCatalog";
 
-// Cycles through real category names rather than made-up example queries -
-// every phrase here is something that will actually return results.
 const PHRASES = STOREFRONT_CATEGORIES.map((c) => `Search "${c}"...`);
 const TYPE_SPEED_MS = 70;
 const DELETE_SPEED_MS = 35;
 const HOLD_MS = 1400;
 
-// The one piece of this bar that needs client JS is the animated
-// placeholder. Submission itself doesn't: it's a plain GET <form>, so it
-// works even if this component fails to hydrate - the browser builds the
-// query string on its own. /products reads `search` and filters for real
-// (same Prisma `contains` pattern as the public API route).
 export default function SearchBar({ className = "" }: { className?: string }) {
   const [placeholder, setPlaceholder] = useState("");
 

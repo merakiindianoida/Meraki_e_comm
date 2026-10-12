@@ -23,7 +23,6 @@ export async function subscribeToNewsletter(
     return { error: RATE_LIMIT_MESSAGE };
   }
 
-  // upsert so re-subscribing doesn't error out
   await prisma.newsletterSubscriber.upsert({
     where: { email: parsed.data.email },
     update: {},

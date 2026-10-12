@@ -3,9 +3,6 @@
 import { useState, useTransition } from "react";
 import { cancelOrder } from "@/app/orders/actions";
 
-// Two-step inline confirm (click "Cancel Order" -> "Are you sure? Yes/No")
-// rather than a native window.confirm() dialog, to match the rest of the
-// site's styling instead of dropping into a browser-chrome popup.
 export default function CancelOrderButton({ orderId }: { orderId: string }) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);

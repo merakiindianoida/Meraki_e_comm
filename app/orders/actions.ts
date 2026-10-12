@@ -15,10 +15,6 @@ export type CancelOrderState = { error?: string } | undefined;
 export type ReturnRequestState = { error?: string } | undefined;
 export type ReviewState = { error?: string } | undefined;
 
-// Self-service cancellation only makes sense before the order has actually
-// shipped - once it's SHIPPED or DELIVERED, that's a return, not a
-// cancellation (see the ReturnRequest flow instead). CANCELLED is already
-// terminal, and there's nothing to cancel from there either.
 export async function cancelOrder(orderId: string): Promise<CancelOrderState> {
   const { userId } = await auth();
   if (!userId) {
@@ -30,8 +26,6 @@ export async function cancelOrder(orderId: string): Promise<CancelOrderState> {
     include: { customer: true },
   });
 
-  // Ownership is checked the same way as app/orders/[id]/page.tsx - never
-  // trust that an order id belongs to the caller just because they have it.
   if (!order || order.customer?.clerkId !== userId) {
     return { error: "Order not found." };
   }
@@ -68,9 +62,6 @@ export async function requestReturn(
     return { error: parsed.error.issues[0]?.message ?? "Invalid request" };
   }
 
-  // "Verified purchase" is enforced right here: the OrderItem has to
-  // belong to an order owned by the caller, and that order has to have
-  // actually been delivered — not just claimed via a form field.
   const orderItem = await prisma.orderItem.findUnique({
     where: { id: orderItemId },
     include: { order: { include: { customer: true } }, returnRequest: true },
@@ -121,10 +112,6 @@ export async function submitReview(
     return { error: parsed.error.issues[0]?.message ?? "Invalid review" };
   }
 
-  // Same verified-purchase check as requestReturn: the OrderItem has to
-  // belong to an order owned by the caller, and that order has to have
-  // actually been delivered — a review can't be filed against a product
-  // never bought, or an order still in transit.
   const orderItem = await prisma.orderItem.findUnique({
     where: { id: orderItemId },
     include: { order: { include: { customer: true } }, review: true, product: true },
