@@ -5,6 +5,7 @@ import {
   sendOrderConfirmationEmail,
   sendOrderStatusEmail,
   sendStockShortfallAlert,
+  toOrderEmailItems,
 } from "@/lib/email";
 import { getPhonePeOrderStatus } from "@/lib/phonepe";
 import { sendOrderWhatsAppUpdate } from "@/lib/whatsapp";
@@ -135,13 +136,18 @@ export async function markOrderPaymentFailed(orderId: string) {
   });
   if (result.count === 0) return;
 
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { items: { include: { product: { select: { name: true, images: true } } } } },
+  });
   if (order?.guestEmail) {
     await sendOrderStatusEmail({
       to: order.guestEmail,
       customerName: order.guestName,
       orderId: order.id,
       status: "PAYMENT_FAILED",
+      items: toOrderEmailItems(order.items),
+      totalAmount: order.totalAmount.toString(),
     });
   }
   if (order) {
@@ -244,6 +250,8 @@ export async function cancelOrderAndRestoreStock(orderId: string): Promise<boole
       customerName: order.guestName,
       orderId: order.id,
       status: "CANCELLED",
+      items: toOrderEmailItems(order.items),
+      totalAmount: order.totalAmount.toString(),
     });
   }
   await sendOrderWhatsAppUpdate({

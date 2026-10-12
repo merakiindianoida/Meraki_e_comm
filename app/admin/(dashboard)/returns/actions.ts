@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/adminAuth";
 import { ReturnStatus } from "@/app/generated/prisma/client";
-import { sendOrderStatusEmail } from "@/lib/email";
+import { sendOrderStatusEmail, toOrderEmailItems } from "@/lib/email";
 import { sendOrderWhatsAppUpdate } from "@/lib/whatsapp";
 import { isForwardOrderTransition } from "@/lib/orderStatus";
 
@@ -24,9 +24,12 @@ export async function updateReturnStatus(id: string, status: string) {
     where: { id },
     include: {
       orderItem: {
-        select: {
-          orderId: true,
-          order: { select: { status: true, guestEmail: true, guestName: true, guestPhone: true, whatsappOptIn: true } },
+        include: {
+          order: {
+            include: {
+              items: { include: { product: { select: { name: true, images: true } } } },
+            },
+          },
         },
       },
     },
@@ -62,6 +65,9 @@ export async function updateReturnStatus(id: string, status: string) {
       customerName: current.orderItem.order.guestName,
       orderId: current.orderItem.orderId,
       status: "REFUNDED",
+      items: toOrderEmailItems(current.orderItem.order.items),
+      totalAmount: current.orderItem.order.totalAmount.toString(),
+      refundAmount: current.orderItem.priceAtSale.mul(current.orderItem.quantity).toString(),
     });
   }
   if (orderMovedForward) {

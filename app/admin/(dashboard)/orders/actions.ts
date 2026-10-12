@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/adminAuth";
 import { OrderStatus } from "@/app/generated/prisma/client";
-import { sendOrderStatusEmail } from "@/lib/email";
+import { sendOrderStatusEmail, toOrderEmailItems } from "@/lib/email";
 import {
   markOrderPaid,
   cancelOrderAndRestoreStock,
@@ -88,7 +88,10 @@ export async function updateOrderStatus(id: string, status: string) {
     });
   }
 
-  const order = await prisma.order.findUnique({ where: { id } });
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: { items: { include: { product: { select: { name: true, images: true } } } } },
+  });
   if (!order) return;
 
   // guestEmail/guestName are the point-in-time snapshot taken when the
@@ -106,6 +109,9 @@ export async function updateOrderStatus(id: string, status: string) {
       customerName: order.guestName,
       orderId: order.id,
       status: order.status,
+      items: toOrderEmailItems(order.items),
+      totalAmount: order.totalAmount.toString(),
+      ...(order.status === "REFUNDED" ? { refundAmount: order.totalAmount.toString() } : {}),
     });
   }
   if (movedForward && order.status !== "CANCELLED") {

@@ -22,12 +22,27 @@ const REPLY_TO = "merakiindianoida@gmail.com";
 // every order email 404s in the customer's inbox.
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-type OrderEmailItem = {
+export type OrderEmailItem = {
   name: string;
   quantity: number;
   priceAtSale: string | number;
   image: string | null;
 };
+
+export function toOrderEmailItems(
+  lines: Array<{
+    quantity: number;
+    priceAtSale: { toString(): string } | string | number;
+    product: { name: string; images: string[] };
+  }>
+): OrderEmailItem[] {
+  return lines.map((line) => ({
+    name: line.product.name,
+    quantity: line.quantity,
+    priceAtSale: line.priceAtSale.toString(),
+    image: line.product.images[0] ?? null,
+  }));
+}
 
 // Every function here swallows its own errors rather than throwing -
 // a failed email should never take down order creation or an admin status
@@ -80,6 +95,17 @@ function itemsRows(items: OrderEmailItem[]): string {
     .join("");
 }
 
+function orderItemsTable(items: OrderEmailItem[], totalAmount: string | number): string {
+  return `
+    <table style="width:100%;border-collapse:collapse;">
+      ${itemsRows(items)}
+      <tr>
+        <td colspan="2" style="padding:14px 0 0;font-size:14px;font-weight:bold;">Order total</td>
+        <td style="padding:14px 0 0;text-align:right;font-size:14px;font-weight:bold;">${formatPrice(totalAmount)}</td>
+      </tr>
+    </table>`;
+}
+
 // Shared chrome (wordmark header + footer) for every customer-facing email.
 // A styled text wordmark rather than the SVG logo - inline SVG support is
 // inconsistent across email clients (notably Outlook), and this domain has
@@ -118,13 +144,7 @@ export async function sendOrderConfirmationEmail(params: {
       getting it ready. Delivery usually takes <strong>3–10 business days</strong>
       (Delhi NCR only, for now).
     </p>
-    <table style="width:100%;border-collapse:collapse;">
-      ${itemsRows(params.items)}
-      <tr>
-        <td colspan="2" style="padding:14px 0 0;font-size:14px;font-weight:bold;">Total</td>
-        <td style="padding:14px 0 0;text-align:right;font-size:14px;font-weight:bold;">${formatPrice(params.totalAmount)}</td>
-      </tr>
-    </table>
+    ${orderItemsTable(params.items, params.totalAmount)}
     <p style="margin:24px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#999;">Order #${orderNumber}</p>
     <p style="margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#999;">Shipping to</p>
     <p style="margin:0;font-size:13px;color:#444;line-height:1.5;">${params.shippingAddress.replace(/\n/g, "<br />")}</p>`;
@@ -203,6 +223,9 @@ export async function sendOrderStatusEmail(params: {
   customerName: string | null;
   orderId: string;
   status: OrderStatus;
+  items: OrderEmailItem[];
+  totalAmount: string | number;
+  refundAmount?: string | number;
 }) {
   const copy = STATUS_COPY[params.status];
   if (!copy) return;
@@ -211,6 +234,10 @@ export async function sendOrderStatusEmail(params: {
   const body = `
     <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:22px;margin:0 0 12px;">Hi ${params.customerName ?? "friend"},</h1>
     <p style="font-size:14px;color:#444;line-height:1.6;margin:0 0 16px;">${copy.body}</p>
+    ${params.status === "REFUNDED" && params.refundAmount !== undefined
+      ? `<p style="padding:12px 14px;background:#f7f5ef;font-size:14px;color:#1a1a1a;"><strong>Refund amount:</strong> ${formatPrice(params.refundAmount)}</p>`
+      : ""}
+    ${orderItemsTable(params.items, params.totalAmount)}
     <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#999;">Order #${orderNumber}</p>`;
 
   await send(params.to, copy.subject, emailShell(body));
